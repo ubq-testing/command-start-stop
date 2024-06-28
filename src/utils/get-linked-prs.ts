@@ -12,6 +12,7 @@ interface GetLinkedResults {
   repository: string;
   number: number;
   href: string;
+  author: string;
 }
 
 export async function getLinkedPullRequests(context: Context, { owner, repository, issue }: GetLinkedParams): Promise<GetLinkedResults[]> {
@@ -36,6 +37,7 @@ export async function getLinkedPullRequests(context: Context, { owner, repositor
         repository: pr.source.issue.repository?.full_name.split("/")[1],
         number: pr.source.issue.number,
         href: pr.source.issue.html_url,
+        author: pr.source.issue.user?.login,
       };
     } else {
       return null;

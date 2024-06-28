@@ -30,7 +30,7 @@ export async function stop(context: Context, issue: Context["payload"]["issue"],
 
   // close PR
 
-  await closePullRequestForAnIssue(context, issueNumber, repo);
+  await closePullRequestForAnIssue(context, issueNumber, repo, assignees[0].login).catch(logger.error);
 
   const {
     name,

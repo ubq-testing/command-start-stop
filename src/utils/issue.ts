@@ -61,7 +61,7 @@ export async function closePullRequest(context: Context, pullNumber: number) {
   }
 }
 
-export async function closePullRequestForAnIssue(context: Context, issueNumber: number, repository: Context["payload"]["repository"]) {
+export async function closePullRequestForAnIssue(context: Context, issueNumber: number, repository: Context["payload"]["repository"], author: string) {
   const logger = context.logger;
   if (!issueNumber) {
     throw logger.fatal("Issue is not defined");
@@ -79,10 +79,20 @@ export async function closePullRequestForAnIssue(context: Context, issueNumber: 
 
   logger.info(`Opened prs`, linkedPullRequests);
   let comment = `These linked pull requests are closed: `;
-  for (let i = 0; i < linkedPullRequests.length; i++) {
-    await closePullRequest(context, linkedPullRequests[i].number);
-    comment += ` <a href="${linkedPullRequests[i].href}">#${linkedPullRequests[i].number}</a> `;
+
+  const usersPR = linkedPullRequests.map((pr) => pr.author === author);
+
+  if (usersPR.length === 0) {
+    return logger.info(`No PRs to close`);
   }
+
+  for (let i = 0; i < linkedPullRequests.length; i++) {
+    if (usersPR[i]) {
+      await closePullRequest(context, linkedPullRequests[i].number);
+      comment += ` <a href="${linkedPullRequests[i].href}">#${linkedPullRequests[i].number}</a> `;
+    }
+  }
+
   await addCommentToIssue(context, comment);
   return logger.info(comment);
 }
