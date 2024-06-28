@@ -65,12 +65,28 @@ describe("User start/stop", () => {
     expect(output).toEqual("Task unassigned successfully");
   });
 
+  test("Stopping an issue should close the author's linked PR", async () => {
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => { });
+    // using the second issue
+    const issue = db.issue.findFirst({ where: { id: { equals: 2 } } }) as unknown as Issue;
+    const sender = db.users.findFirst({ where: { id: { equals: 2 } } }) as unknown as Sender;
+    const context = createContext(issue, sender, "/stop");
+
+    context.adapters = createAdapters(getSupabase(), context as unknown as Context);
+
+    const { output } = await userStartStop(context as unknown as Context);
+
+    expect(output).toEqual("Task unassigned successfully");
+    const logs = infoSpy.mock.calls.flat();
+    expect(logs[0]).toMatch(/Opened prs/)
+    expect(logs[3]).toMatch(/These linked pull requests are closed:  <a href="http:\/\/github.com\/ubiquity\/test-repo\/pull\/2">#2<\/a>\s+<a href="http:\/\/github.com\/ubiquity\/test-repo\/pull\/3">#3<\/a>/)
+  });
+
   test("User can't stop an issue they're not assigned to", async () => {
     // using the second issue
     const issue = db.issue.findFirst({ where: { id: { equals: 2 } } }) as unknown as Issue;
     const sender = db.users.findFirst({ where: { id: { equals: 1 } } }) as unknown as Sender;
 
-    console.log(issue.assignees, issue.assignee?.login, sender)
     const context = createContext(issue, sender, "/stop");
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
@@ -85,7 +101,7 @@ describe("User start/stop", () => {
     const issue = db.issue.findFirst({ where: { id: { equals: 6 } } }) as unknown as Issue;
     const sender = db.users.findFirst({ where: { id: { equals: 1 } } }) as unknown as Sender;
 
-    console.log(issue.assignees, issue.assignee?.login, sender)
+    console.log(issue.assignees, issue.assignee?.login, sender);
     const context = createContext(issue, sender, "/stop");
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
@@ -325,7 +341,7 @@ async function setupTests() {
     number: 4,
     body: "Fourth issue body",
     owner: "ubiquity",
-    state: "CLOSED",
+    state: "closed",
   });
 
   db.issue.create({
@@ -357,9 +373,54 @@ async function setupTests() {
       id: 2,
       name: "user2",
     },
-    body: "Pull request body",
-    owner: "user2",
+    user: {
+      id: 2,
+      login: "user2",
+    },
+    body: "Pull body",
+    owner: "ubiquity",
     repo: "test-repo",
+    state: "open",
+    closed_at: null,
+  });
+
+  db.pull.create({
+    id: 2,
+    html_url: "",
+    number: 2,
+    author: {
+      id: 2,
+      name: "user2",
+    },
+    user: {
+      id: 2,
+      login: "user2",
+    },
+    body: "Pull request",
+    owner: "ubiquity",
+    repo: "test-repo",
+    state: "open",
+    closed_at: null,
+  });
+
+  db.pull.create({
+    id: 3,
+    html_url: "",
+    number: 3,
+    author: {
+      id: 1,
+      name: "ubiquity",
+    },
+    user: {
+      id: 1,
+      login: "ubiquity",
+    },
+    body: "Pull request body",
+    owner: "ubiquity",
+
+    repo: "test-repo",
+    state: "open",
+    closed_at: null,
   });
 
   db.review.create({
@@ -377,34 +438,84 @@ async function setupTests() {
     pull_number: 1,
   });
 
+  const CROSS_REFERENCED = "cross-referenced";
+
   db.event.create({
     id: 1,
-    actor: {
-      id: 2,
-      name: "user2",
-    },
+    created_at: new Date().toISOString(),
     commit_id: "123",
     commit_url: "",
-    created_at: new Date().toISOString(),
-    event: "cross-referenced",
+    event: CROSS_REFERENCED,
     issue_number: 1,
     owner: "ubiquity",
     repo: "test-repo",
+    source: {
+      issue: {
+        number: 10,
+        html_url: "https://github.com/ubiquity/test-repo/pull/10",
+        repository: {
+          full_name: "ubiquity/test-repo",
+        },
+        user: {
+          login: "ubiquity",
+        },
+        pull_request: {
+          html_url: "https://github.com/ubiquity/test-repo/pull/10",
+        },
+      },
+    },
   });
 
   db.event.create({
     id: 2,
-    actor: {
-      id: 1,
-      name: "ubiquity",
-    },
     commit_id: "123",
     commit_url: "",
     created_at: new Date().toISOString(),
-    event: "cross-referenced",
+    event: CROSS_REFERENCED,
     issue_number: 2,
     owner: "ubiquity",
     repo: "test-repo",
+    source: {
+      issue: {
+        number: 2,
+        html_url: "http://github.com/ubiquity/test-repo/pull/2",
+        repository: {
+          full_name: "ubiquity/test-repo",
+        },
+        user: {
+          login: "user2",
+        },
+        pull_request: {
+          html_url: "http://github.com/ubiquity/test-repo/pull/2",
+        },
+      },
+    },
+  });
+
+  db.event.create({
+    id: 3,
+    commit_id: "123",
+    commit_url: "",
+    created_at: new Date().toISOString(),
+    event: CROSS_REFERENCED,
+    issue_number: 2,
+    owner: "ubiquity",
+    repo: "test-repo",
+    source: {
+      issue: {
+        number: 3,
+        html_url: "http://github.com/ubiquity/test-repo/pull/3",
+        repository: {
+          full_name: "ubiquity/test-repo",
+        },
+        user: {
+          login: "user2",
+        },
+        pull_request: {
+          html_url: "http://github.com/ubiquity/test-repo/pull/3",
+        },
+      },
+    },
   });
 }
 
