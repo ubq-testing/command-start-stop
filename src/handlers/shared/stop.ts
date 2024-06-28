@@ -17,7 +17,7 @@ export async function stop(context: Context, issue: Context["payload"]["issue"],
   if (assignees.length == 0) {
     logger.error("No assignees found for issue", { issueNumber });
     await addCommentToIssue(context, "````diff\n! You are not assigned to this task.\n````");
-    return { output: "No assignees found for this task" }
+    return { output: "No assignees found for this task" };
   }
 
   // should unassign?
@@ -29,8 +29,7 @@ export async function stop(context: Context, issue: Context["payload"]["issue"],
   }
 
   // close PR
-
-  await closePullRequestForAnIssue(context, issueNumber, repo, assignees[0].login).catch(logger.error);
+  await closePullRequestForAnIssue(context, issueNumber, repo, assignees[0]?.login);
 
   const {
     name,

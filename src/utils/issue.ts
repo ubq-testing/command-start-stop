@@ -1,6 +1,6 @@
 import { Context } from "../types/context";
 import { Issue, ISSUE_TYPE } from "../types/payload";
-import { getLinkedPullRequests } from "./get-linked-prs";
+import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;
@@ -28,7 +28,7 @@ export async function getAssignedIssues(context: Context, username: string): Pro
 }
 
 export async function addCommentToIssue(context: Context, message: string | null) {
-  let comment = message as string;
+  const comment = message as string;
 
   const { payload } = context;
 
@@ -47,13 +47,13 @@ export async function addCommentToIssue(context: Context, message: string | null
 
 //// Pull Requests \\\\
 
-export async function closePullRequest(context: Context, pullNumber: number) {
-  const { repository } = context.payload;
+export async function closePullRequest(context: Context, results: GetLinkedResults) {
+  const { payload } = context;
   try {
     await context.octokit.rest.pulls.update({
-      owner: repository.owner.login,
-      repo: repository.name,
-      pull_number: pullNumber,
+      owner: payload.repository.owner.login,
+      repo: payload.repository.name,
+      pull_number: results.number,
       state: "closed",
     });
   } catch (err: unknown) {
@@ -61,7 +61,7 @@ export async function closePullRequest(context: Context, pullNumber: number) {
   }
 }
 
-export async function closePullRequestForAnIssue(context: Context, issueNumber: number, repository: Context["payload"]["repository"], author: string) {
+export async function closePullRequestForAnIssue(context: Context, issueNumber: number, repository: Context["payload"]["repository"], author?: string | null) {
   const logger = context.logger;
   if (!issueNumber) {
     throw logger.fatal("Issue is not defined");
@@ -80,17 +80,29 @@ export async function closePullRequestForAnIssue(context: Context, issueNumber: 
   logger.info(`Opened prs`, linkedPullRequests);
   let comment = `These linked pull requests are closed: `;
 
-  const usersPR = linkedPullRequests.map((pr) => pr.author === author);
-
-  if (usersPR.length === 0) {
-    return logger.info(`No PRs to close`);
+  if (!author) {
+    // Close all PRs?
+    logger.error("PR author is not defined");
+    return;
   }
 
-  for (let i = 0; i < linkedPullRequests.length; i++) {
-    if (usersPR[i]) {
-      await closePullRequest(context, linkedPullRequests[i].number);
-      comment += ` <a href="${linkedPullRequests[i].href}">#${linkedPullRequests[i].number}</a> `;
+  if (linkedPullRequests.length === 0) {
+    return logger.info(`No open PRs to close`);
+  }
+
+  const currentRepo = context.payload.repository;
+
+  for await (const pr of linkedPullRequests) {
+    if (pr.author !== author || pr.organization !== currentRepo.owner.login || pr.repository !== currentRepo.name) {
+      continue;
+    } else {
+      await closePullRequest(context, pr);
+      comment += ` <a href="${pr.href}">#${pr.number}</a> `;
     }
+  }
+
+  if (comment === `These linked pull requests are closed: `) {
+    return logger.info(`No PRs were closed`);
   }
 
   await addCommentToIssue(context, comment);
