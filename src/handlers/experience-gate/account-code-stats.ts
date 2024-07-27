@@ -78,20 +78,8 @@ function handleLanguageChecks(
 }
 
 function handleStatChecks(
-    stats: {
-        totalPRs: number;
-        totalStars: number;
-        totalIssues: number;
-        totalCommitsThisYear: number;
-        totalContributionsLastYear: number;
-    },
-    thresholds: {
-        prs: number;
-        stars: number;
-        issues: number;
-        commits: number;
-        contributions: number;
-    },
+    stats: ReturnType<typeof statsParser>,
+    thresholds: Context["config"]["experience"]["statThresholds"],
     logger: Context["logger"],
     sender: Context["payload"]["sender"]
 ) {
@@ -100,7 +88,6 @@ function handleStatChecks(
         totalStars,
         totalIssues,
         totalCommitsThisYear,
-        totalContributionsLastYear,
     } = stats;
 
     if (totalPRs < thresholds.prs) {
@@ -118,17 +105,10 @@ function handleStatChecks(
         return;
     }
 
-    if (totalCommitsThisYear < thresholds.commits) {
-        logger.error(`${sender.login} has less than required ${thresholds.commits} commits`);
+    if (totalCommitsThisYear < thresholds.minCommitsThisYear) {
+        logger.error(`${sender.login} has less than required ${thresholds.minCommitsThisYear} commits`);
         return;
     }
-
-    if (totalContributionsLastYear < thresholds.contributions) {
-        logger.error(`${sender.login} has less than required ${thresholds.contributions} contributions`);
-        return;
-    }
-
-
 
     logger.info(`${sender.login} has passed all stat checks`);
 

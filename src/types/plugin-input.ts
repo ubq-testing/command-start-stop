@@ -36,10 +36,10 @@ export const startStopSchema = T.Object({
       languages: T.Record(T.String(), T.Number()), // Languages to detect
       statThresholds: T.Object({
         stars: T.Number(), // Minimum number of stars
-        commits: T.Number(), // Minimum number of commits
+        minCommitsThisYear: T.Number(), // Minimum number of commits
         prs: T.Number(), // Minimum number of PRs
         issues: T.Number(), // Minimum number of issues
-        contributions: T.Number(), // Minimum number of contributions
+        // contributions: T.Number(), // Minimum number of contributions
       }),
     },
     {
