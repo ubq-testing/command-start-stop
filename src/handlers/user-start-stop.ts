@@ -22,7 +22,7 @@ export async function userStartStop(context: Context): Promise<{ output: string 
     if (await handleExperienceChecks(context)) {
       return await start(context, issue, sender);
     } else {
-      const log = context.logger.error(`You do not meet the requirements to start this issue.`);
+      const log = context.logger.error(`You do not meet the requirements to start this task.`);
       await addCommentToIssue(context, log?.logMessage.diff as string);
     }
   }
