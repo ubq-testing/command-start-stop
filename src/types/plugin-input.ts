@@ -29,6 +29,33 @@ export const startStopSchema = T.Object({
     },
     { default: { maxConcurrentTasks: 3, startRequiresWallet: true } }
   ),
+  experience: T.Object(
+    {
+      minAccountAgeInDays: T.Number(), // Minimum account age in days,
+      mostImportantLanguage: T.Record(T.String(), T.Number()), // Most important language to detect
+      languages: T.Record(T.String(), T.Number()), // Languages to detect
+      statThresholds: T.Object({
+        stars: T.Number(), // Minimum number of stars
+        commits: T.Number(), // Minimum number of commits
+        prs: T.Number(), // Minimum number of PRs
+        issues: T.Number(), // Minimum number of issues
+        contributions: T.Number(), // Minimum number of contributions
+      }),
+    },
+    {
+      default: {
+        minAccountAge: 365,
+        mostImportantLanguage: { Typescript: 10 },
+        languages: { Solidity: 10, JavaScript: 10 },
+        statThresholds: {
+          stars: 1,
+          commits: 1,
+          prs: 1,
+          issues: 1,
+          contributions: 1,
+        }
+      }
+    })
 });
 
 export type StartStopSettings = StaticDecode<typeof startStopSchema>;
