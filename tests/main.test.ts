@@ -240,6 +240,20 @@ describe("User start/stop", () => {
       }
     }
   });
+
+
+  test("User can't start an issue if they don't pass the experience checks", async () => {
+    const issue = db.issue.findFirst({ where: { id: { equals: 1 } } }) as unknown as Issue;
+    const sender = db.users.findFirst({ where: { id: { equals: 1 } } }) as unknown as Sender;
+
+
+    const context = createContext(issue, sender, "/start", true, true, true, false);
+    const warnSpy = jest.spyOn(context.logger, "error");
+    await userStartStop(context);
+
+    expect(warnSpy).toHaveBeenNthCalledWith(1, "ubiquity has less than required 50% experience with solidity");
+    expect(warnSpy).toHaveBeenNthCalledWith(2, "You do not meet the requirements to start this issue.");
+  });
 });
 
 async function setupTests() {
@@ -384,7 +398,7 @@ async function setupTests() {
   });
 }
 
-function createContext(issue: Record<string, unknown>, sender: Record<string, unknown>, body = "/start", isEnabled = true, withData = true) {
+function createContext(issue: Record<string, unknown>, sender: Record<string, unknown>, body = "/start", isEnabled = true, withData = true, experience = false, passXp = true) {
   const ctx: Context = {
     adapters: {} as ReturnType<typeof createAdapters>,
     payload: {
@@ -407,17 +421,31 @@ function createContext(issue: Record<string, unknown>, sender: Record<string, un
         maxConcurrentTasks: 3,
         startRequiresWallet: true,
       },
-      experience: {
-        minAccountAgeInDays: 0,
-        mostImportantLanguage: { Typescript: 0 },
-        languages: { Solidity: 0 },
-        statThresholds: {
-          stars: 0,
-          minCommitsThisYear: 0,
-          prs: 0,
-          issues: 0,
-        },
-      },
+      experience: experience ?
+        passXp ?
+          {
+            minAccountAgeInDays: 365,
+            mostImportantLanguage: { Typescript: 30 },
+            languages: { Solidity: 15 },
+            statThresholds: {
+              stars: 15,
+              minCommitsThisYear: 150,
+              prs: 50,
+              issues: 2,
+            },
+          } : {
+            minAccountAgeInDays: 365,
+            mostImportantLanguage: { Solidity: 50 },
+            languages: { Typescript: 30 },
+            statThresholds: {
+              stars: 15,
+              minCommitsThisYear: 150,
+              prs: 50,
+              issues: 2,
+            },
+          }
+
+        : undefined,
     },
     octokit: new octokit.Octokit(),
     eventName: "issue_comment.created" as SupportedEventsU,
@@ -443,17 +471,17 @@ function getSupabase(withData = true) {
         single: jest.fn().mockResolvedValue({
           data: withData
             ? {
-                id: 1,
-                wallets: {
-                  address: "0x123",
-                },
-              }
-            : {
-                id: 1,
-                wallets: {
-                  address: undefined,
-                },
+              id: 1,
+              wallets: {
+                address: "0x123",
               },
+            }
+            : {
+              id: 1,
+              wallets: {
+                address: undefined,
+              },
+            },
         }),
       }),
     }),

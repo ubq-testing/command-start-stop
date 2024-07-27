@@ -9,8 +9,8 @@ export async function handleExperienceChecks(context: Context) {
   } = context;
 
   if (!experience) {
-    logger.error("Experience checks are disabled");
-    return;
+    logger.info("Experience checks are disabled");
+    return true;
   }
 
   if (!(await accountAgeHandler(context))) {
