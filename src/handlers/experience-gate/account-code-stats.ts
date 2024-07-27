@@ -36,8 +36,6 @@ async function getAccountStats(username: string) {
     }
 }
 
-
-
 function handleLanguageChecks(
     langs: { lang: string; percentage: number }[],
     mostImportantLanguage: Context["config"]["experience"]["mostImportantLanguage"],
@@ -45,32 +43,42 @@ function handleLanguageChecks(
     logger: Context["logger"],
     sender: Context["payload"]["sender"]
 ) {
-    const mostImportantLang = langs.find(lang => lang.lang.toLowerCase() in mostImportantLanguage);
+    const mostImportantLang = Object.keys(mostImportantLanguage)[0].toLowerCase();
+    const requiredMilThreshold = Object.values(mostImportantLanguage)[0];
+    const mostImportantLangData = langs.find(lang => lang.lang.toLowerCase() === mostImportantLang);
 
-    if (!mostImportantLang) {
+    if (!mostImportantLangData) {
         logger.error(`${sender.login} does not any recorded experience with ${mostImportantLanguage}`);
         return;
     }
 
-    const userMilPercentage = mostImportantLang.percentage;
-    const requiredMilThreshold = mostImportantLanguage[mostImportantLang.lang.toLowerCase()];
-
-    if (requiredMilThreshold > userMilPercentage) {
-        logger.error(`${sender.login}: ${userMilPercentage}% of ${mostImportantLang.lang} is less than required ${requiredMilThreshold}%`);
+    if (mostImportantLangData.percentage < requiredMilThreshold) {
+        logger.error(`${sender.login} has less than required ${requiredMilThreshold}% experience with ${mostImportantLangData.lang}`);
         return;
     }
 
-    const detectedLangs = langs.filter(lang => lang.lang.toLowerCase() in languages);
+    const langsToCheck = Object.keys(languages).map(lang => lang.toLowerCase());
+    const detectedLangs = [];
+    for (const lang of langsToCheck) {
+        const langData = langs.find(l => l.lang.toLowerCase() === lang);
+        if (langData) {
+            detectedLangs.push(langData);
+        }
+    }
 
     for (const lang of detectedLangs) {
         const threshold = languages[lang.lang.toLowerCase()];
         const percentage = lang.percentage;
+
+        console.log(`processing ${lang.lang} with ${percentage}% experience`);
 
         if (threshold > percentage) {
             logger.error(`${sender.login}: ${percentage}% of ${lang.lang} is less than required ${threshold}%`);
             return;
         }
     }
+
+
 
     logger.info(`${sender.login} has passed all language checks`);
 
