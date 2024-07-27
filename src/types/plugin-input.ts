@@ -59,7 +59,7 @@ export const startStopSchema = T.Object({
       },
       {
         default: {
-          minAccountAge: 365,
+          minAccountAgeInDays: 365,
           mostImportantLanguage: { Typescript: 10 },
           languages: { Solidity: 10, JavaScript: 10 },
           statThresholds: {
