@@ -252,7 +252,7 @@ describe("User start/stop", () => {
     await userStartStop(context);
 
     expect(warnSpy).toHaveBeenNthCalledWith(1, "ubiquity has less than required 50% experience with solidity");
-    expect(warnSpy).toHaveBeenNthCalledWith(2, "You do not meet the requirements to start this issue.");
+    expect(warnSpy).toHaveBeenNthCalledWith(2, "You do not meet the requirements to start this task.");
   });
 });
 
