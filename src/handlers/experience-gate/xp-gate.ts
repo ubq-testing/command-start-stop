@@ -3,17 +3,25 @@ import { accountAgeHandler } from "./account-age-handler";
 import { Context } from "../../types";
 
 export async function handleExperienceChecks(context: Context) {
-    const { logger } = context;
+  const {
+    logger,
+    config: { experience },
+  } = context;
 
-    if (!await accountAgeHandler(context)) {
-        return;
-    }
+  if (!experience) {
+    logger.error("Experience checks are disabled");
+    return;
+  }
 
-    if (!await accountCodeStats(context)) {
-        return;
-    }
+  if (!(await accountAgeHandler(context))) {
+    return;
+  }
 
-    logger.info("User meets all requirements");
+  if (!(await accountCodeStats(context))) {
+    return;
+  }
 
-    return true;
+  logger.info("User meets all requirements");
+
+  return true;
 }

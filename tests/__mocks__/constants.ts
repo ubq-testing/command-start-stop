@@ -1,3 +1,4 @@
+// cspell: disable
 export const TOP_LANGS = `
       <svg
         width="300"
@@ -214,7 +215,7 @@ export const TOP_LANGS = `
     </svg>
 
         </g>
-      </svg>`
+      </svg>`;
 
 export const STATS = `<svg
         width="450"
@@ -425,4 +426,4 @@ export const STATS = `<svg
     </svg>
 
         </g>
-      </svg>`
+      </svg>`;

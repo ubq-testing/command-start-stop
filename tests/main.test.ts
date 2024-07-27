@@ -424,7 +424,7 @@ function createContext(issue: Record<string, unknown>, sender: Record<string, un
     env: {
       SUPABASE_KEY: key,
       SUPABASE_URL: url,
-    }
+    },
   } as unknown as Context;
 
   if (withData) {
@@ -443,17 +443,17 @@ function getSupabase(withData = true) {
         single: jest.fn().mockResolvedValue({
           data: withData
             ? {
-              id: 1,
-              wallets: {
-                address: "0x123",
-              },
-            }
+                id: 1,
+                wallets: {
+                  address: "0x123",
+                },
+              }
             : {
-              id: 1,
-              wallets: {
-                address: undefined,
+                id: 1,
+                wallets: {
+                  address: undefined,
+                },
               },
-            },
         }),
       }),
     }),
