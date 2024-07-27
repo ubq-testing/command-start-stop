@@ -20,12 +20,15 @@ export async function accountCodeStats(context: Context) {
 
 
 async function getAccountStats(username: string) {
-    // https://github.com/anuraghazra/github-readme-stats - for more info, filters, etc.
     const statsUrl = `https://github-readme-stats.vercel.app/api?username=${username}`;
     const topLangsUrl = `https://github-readme-stats.vercel.app/api/top-langs/?username=${username}`
 
     const statsRes = await fetch(statsUrl);
     const topLangsRes = await fetch(topLangsUrl);
+
+    if (!statsRes.ok || !topLangsRes.ok) {
+        throw new Error("Failed to fetch account stats");
+    }
 
     const statsDoc = await statsRes.text();
     const topLangsDoc = await topLangsRes.text();
@@ -48,12 +51,12 @@ function handleLanguageChecks(
     const mostImportantLangData = langs.find(lang => lang.lang.toLowerCase() === mostImportantLang);
 
     if (!mostImportantLangData) {
-        logger.error(`${sender.login} does not any recorded experience with ${mostImportantLanguage}`);
+        logger.error(`${sender.login} does not any recorded experience with ${mostImportantLang}`);
         return;
     }
 
     if (mostImportantLangData.percentage < requiredMilThreshold) {
-        logger.error(`${sender.login} has less than required ${requiredMilThreshold}% experience with ${mostImportantLangData.lang}`);
+        logger.error(`${sender.login} has less than required ${requiredMilThreshold}% experience with ${mostImportantLang}`);
         return;
     }
 
@@ -70,15 +73,11 @@ function handleLanguageChecks(
         const threshold = languages[lang.lang.toLowerCase()];
         const percentage = lang.percentage;
 
-        console.log(`processing ${lang.lang} with ${percentage}% experience`);
-
         if (threshold > percentage) {
             logger.error(`${sender.login}: ${percentage}% of ${lang.lang} is less than required ${threshold}%`);
             return;
         }
     }
-
-
 
     logger.info(`${sender.login} has passed all language checks`);
 
@@ -97,6 +96,8 @@ function handleStatChecks(
         totalIssues,
         totalCommitsThisYear,
     } = stats;
+
+    logger.info(`Checking ${sender.login} stats`, { stats, thresholds });
 
     if (totalPRs < thresholds.prs) {
         logger.error(`${sender.login} has less than required ${thresholds.prs} PRs`);

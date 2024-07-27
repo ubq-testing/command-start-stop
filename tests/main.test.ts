@@ -44,7 +44,7 @@ describe("User start/stop", () => {
 
     const context = createContext(issue, sender);
 
-    const { output } = await userStartStop(context as unknown as Context);
+    const { output } = await userStartStop(context);
 
     expect(output).toEqual("Task assigned successfully");
   });
@@ -56,7 +56,7 @@ describe("User start/stop", () => {
 
     const context = createContext(issue, sender, "/stop");
 
-    const { output } = await userStartStop(context as unknown as Context);
+    const { output } = await userStartStop(context);
 
     expect(output).toEqual("Task unassigned successfully");
   });
@@ -68,7 +68,7 @@ describe("User start/stop", () => {
 
     const context = createContext(issue, sender, "/stop");
 
-    const output = await userStartStop(context as unknown as Context);
+    const output = await userStartStop(context);
 
     expect(output).toEqual({ output: "You are not assigned to this task" });
   });
@@ -80,7 +80,7 @@ describe("User start/stop", () => {
 
     const context = createContext(issue, sender, "/stop");
 
-    const output = await userStartStop(context as unknown as Context);
+    const output = await userStartStop(context);
 
     expect(output).toEqual({ output: "No assignees found for this task" });
   });
@@ -94,7 +94,7 @@ describe("User start/stop", () => {
     const err = "Issue is already assigned";
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual(err);
@@ -111,7 +111,7 @@ describe("User start/stop", () => {
     const err = "No price label is set to calculate the duration";
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual(err);
@@ -125,7 +125,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/start", true, false);
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual("No wallet address found");
@@ -140,7 +140,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender);
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual("Issue is closed");
@@ -154,10 +154,10 @@ describe("User start/stop", () => {
 
     const context = createContext(issue, sender, "/start", false);
 
-    context.adapters = createAdapters(getSupabase(), context as unknown as Context);
+    context.adapters = createAdapters(getSupabase(), context);
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual("The '/start' command is disabled for this repository.");
@@ -172,7 +172,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/stop", false);
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual("The '/stop' command is disabled for this repository.");
@@ -187,7 +187,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/start");
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual("Issue is a parent issue");
@@ -230,10 +230,10 @@ describe("User start/stop", () => {
 
     const context = createContext(issue, sender);
 
-    context.adapters = createAdapters(getSupabase(), context as unknown as Context);
+    context.adapters = createAdapters(getSupabase(), context);
 
     try {
-      await userStartStop(context as unknown as Context);
+      await userStartStop(context);
     } catch (error) {
       if (error instanceof Error) {
         expect(error.message).toEqual("Too many assigned issues, you have reached your max limit of 3 issues.");
@@ -385,7 +385,7 @@ async function setupTests() {
 }
 
 function createContext(issue: Record<string, unknown>, sender: Record<string, unknown>, body = "/start", isEnabled = true, withData = true) {
-  const ctx = {
+  const ctx: Context = {
     adapters: {} as ReturnType<typeof createAdapters>,
     payload: {
       issue: issue as unknown as Context["payload"]["issue"],
@@ -407,13 +407,24 @@ function createContext(issue: Record<string, unknown>, sender: Record<string, un
         maxConcurrentTasks: 3,
         startRequiresWallet: true,
       },
+      experience: {
+        minAccountAgeInDays: 0,
+        mostImportantLanguage: { Typescript: 0 },
+        languages: { Solidity: 0 },
+        statThresholds: {
+          stars: 0,
+          minCommitsThisYear: 0,
+          prs: 0,
+          issues: 0,
+        },
+      },
     },
     octokit: new octokit.Octokit(),
     eventName: "issue_comment.created" as SupportedEventsU,
     env: {
       SUPABASE_KEY: key,
       SUPABASE_URL: url,
-    },
+    }
   } as unknown as Context;
 
   if (withData) {

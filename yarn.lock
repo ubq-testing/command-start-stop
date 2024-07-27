@@ -2502,7 +2502,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:29.5.12":
+"@types/jest@npm:^29.5.12":
   version: 29.5.12
   resolution: "@types/jest@npm:29.5.12"
   dependencies:
@@ -2774,7 +2774,7 @@ __metadata:
     "@octokit/webhooks": "npm:^13.1.0"
     "@sinclair/typebox": "npm:^0.32.5"
     "@supabase/supabase-js": "npm:2.42.0"
-    "@types/jest": "npm:29.5.12"
+    "@types/jest": "npm:^29.5.12"
     "@types/ms": "npm:^0.7.34"
     "@types/node": "npm:^20.11.19"
     "@typescript-eslint/eslint-plugin": "npm:^7.0.1"

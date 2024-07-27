@@ -1,10 +1,12 @@
 [
   {
     "id": 1,
-    "login": "ubiquity"
+    "login": "ubiquity",
+    "created_at": "2020-01-01T00:00:00Z"
   },
   {
     "id": 2,
-    "login": "user2"
+    "login": "user2",
+    "created_at": "2024-01-01T00:00:00Z"
   }
 ]

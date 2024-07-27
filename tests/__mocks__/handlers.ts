@@ -3,6 +3,7 @@
 import { http, HttpResponse } from "msw";
 import { db } from "./db";
 import issueTemplate from "./issue-template";
+import { STATS, TOP_LANGS } from "./constants";
 
 /**
  * Intercepts the routes and returns a custom payload
@@ -96,5 +97,15 @@ export const handlers = [
   // remove assignee from an issue
   http.delete("https://api.github.com/repos/:owner/:repo/issues/:issue_number/assignees", ({ params: { owner, repo, issue_number } }) => {
     return HttpResponse.json({ owner, repo, issue_number });
+  }),
+  //  octokit.users.getByUsername({
+  http.get("https://api.github.com/users/:username", ({ params: { username } }) => {
+    return HttpResponse.json(db.users.findFirst({ where: { login: { equals: username as string } } }));
+  }),
+  http.get("https://github-readme-stats.vercel.app/api", () => {
+    return HttpResponse.text(STATS);
+  }),
+  http.get("https://github-readme-stats.vercel.app/api/top-langs/", () => {
+    return HttpResponse.text(TOP_LANGS);
   }),
 ];
