@@ -39,32 +39,32 @@ async function getAccountStats(username: string) {
 
 
 function handleLanguageChecks(
-    langs: { lang: string; percentage: string }[],
-    mostImportantLanguage: { [key: string]: number },
-    languages: { [key: string]: number },
+    langs: { lang: string; percentage: number }[],
+    mostImportantLanguage: Context["config"]["experience"]["mostImportantLanguage"],
+    languages: Context["config"]["experience"]["languages"],
     logger: Context["logger"],
     sender: Context["payload"]["sender"]
 ) {
-    const mostImportantLang = langs.find(lang => lang.lang in mostImportantLanguage);
+    const mostImportantLang = langs.find(lang => lang.lang.toLowerCase() in mostImportantLanguage);
 
     if (!mostImportantLang) {
         logger.error(`${sender.login} does not any recorded experience with ${mostImportantLanguage}`);
         return;
     }
 
-    const userMilPercentage = parseFloat(mostImportantLang.percentage);
-    const requiredMilThreshold = mostImportantLanguage[mostImportantLang.lang];
+    const userMilPercentage = mostImportantLang.percentage;
+    const requiredMilThreshold = mostImportantLanguage[mostImportantLang.lang.toLowerCase()];
 
     if (requiredMilThreshold > userMilPercentage) {
         logger.error(`${sender.login}: ${userMilPercentage}% of ${mostImportantLang.lang} is less than required ${requiredMilThreshold}%`);
         return;
     }
 
-    const detectedLangs = langs.filter(lang => lang.lang in languages);
+    const detectedLangs = langs.filter(lang => lang.lang.toLowerCase() in languages);
 
     for (const lang of detectedLangs) {
-        const threshold = languages[lang.lang];
-        const percentage = parseFloat(lang.percentage);
+        const threshold = languages[lang.lang.toLowerCase()];
+        const percentage = lang.percentage;
 
         if (threshold > percentage) {
             logger.error(`${sender.login}: ${percentage}% of ${lang.lang} is less than required ${threshold}%`);

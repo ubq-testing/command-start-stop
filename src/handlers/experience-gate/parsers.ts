@@ -10,7 +10,7 @@ export function topLangsParser(html: string) {
     const data = langs.map((i, lang) => {
         return {
             lang: $(lang).text().toLowerCase(),
-            percentage: $(percentages[i]).text()
+            percentage: parseFloat($(percentages[i]).text())
         };
     }).get();
 
