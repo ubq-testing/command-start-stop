@@ -54,7 +54,6 @@ export const startStopSchema = T.Object({
           minCommitsThisYear: T.Number(), // Minimum number of commits
           prs: T.Number(), // Minimum number of PRs
           issues: T.Number(), // Minimum number of issues
-          // contributions: T.Number(), // Minimum number of contributions
         }),
       },
       {
@@ -64,10 +63,9 @@ export const startStopSchema = T.Object({
           languages: { Solidity: 10, JavaScript: 10 },
           statThresholds: {
             stars: 1,
-            commits: 1,
+            minCommitsThisYear: 1,
             prs: 1,
             issues: 1,
-            contributions: 1,
           },
         },
       }
