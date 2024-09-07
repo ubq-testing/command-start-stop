@@ -11,6 +11,8 @@ export interface PluginInputs<T extends SupportedEventsU = SupportedEventsU, TU 
   ref: string;
 }
 
+const rolesWithReviewAuthority = T.Array(T.String({ default: ["COLLABORATOR", "OWNER", "MEMBER"] }))
+
 export const startStopSchema = T.Object(
   {
     reviewDelayTolerance: T.String({ default: "1 Day" }),
@@ -18,6 +20,9 @@ export const startStopSchema = T.Object(
     maxConcurrentTasks: T.Number({ default: 3 }),
     startRequiresWallet: T.Boolean({ default: true }),
     emptyWalletText: T.String({ default: "Please set your wallet address with the /wallet command first and try again." }),
+    rolesWithReviewAuthority: T.Transform(rolesWithReviewAuthority)
+      .Decode((value) => value.map((role) => role.toUpperCase()))
+      .Encode((value) => value.map((role) => role.toUpperCase())),
   },
   {
     default: {},
