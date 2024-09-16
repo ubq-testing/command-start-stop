@@ -1,7 +1,7 @@
 import { Value } from "@sinclair/typebox/value";
+import manifest from "../manifest.json";
 import { startStopTask } from "./plugin";
 import { Env, envConfigValidator, startStopSchema, startStopSettingsValidator } from "./types";
-import manifest from "../manifest.json";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -50,7 +50,7 @@ export default {
       const decodedEnv = Value.Decode(envConfigValidator.schema, env);
       webhookPayload.env = decodedEnv;
       webhookPayload.settings = settings;
-      await startStopTask(webhookPayload, env);
+      await startStopTask(webhookPayload, decodedEnv);
       return new Response(JSON.stringify("OK"), { status: 200, headers: { "content-type": "application/json" } });
     } catch (error) {
       return handleUncaughtError(error);

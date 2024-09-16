@@ -1,7 +1,13 @@
 import { Assignee, Context, Sender } from "../../types";
-import { addCommentToIssue, closePullRequestForAnIssue } from "../../utils/issue";
+import { closePullRequestForAnIssue } from "../../utils/issue";
+import { HttpStatusCode, Result } from "../result-types";
 
-export async function stop(context: Context, issue: Context["payload"]["issue"], sender: Sender, repo: Context["payload"]["repository"]) {
+export async function stop(
+  context: Context,
+  issue: Context<"issue_comment.created">["payload"]["issue"],
+  sender: Sender,
+  repo: Context["payload"]["repository"]
+): Promise<Result> {
   const { logger } = context;
   const issueNumber = issue.number;
 
@@ -41,11 +47,5 @@ export async function stop(context: Context, issue: Context["payload"]["issue"],
     );
   }
 
-  const unassignedLog = logger.info("You have been unassigned from the task", {
-    issueNumber,
-    user: userToUnassign.login,
-  });
-
-  await addCommentToIssue(context, unassignedLog?.logMessage.diff as string);
-  return { output: "Task unassigned successfully" };
+  return { content: "Task unassigned successfully", status: HttpStatusCode.OK };
 }
