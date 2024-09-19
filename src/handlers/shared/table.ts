@@ -11,10 +11,10 @@ export function assignTableComment({ taskDeadline, registeredWallet, isTaskStale
   }
 
   if (taskDeadline) {
-    elements.push("<tr>", "<td>Deadline</td>", `<td><b>${taskDeadline}</b></td>`, "</tr>");
+    elements.push("<tr>", "<td>Deadline</td>", `<td>${taskDeadline}</td>`, "</tr>");
   }
 
-  elements.push("<tr>", "<td>Beneficiary</td>", `<td><b>${registeredWallet}</b></td>`, "</tr>", "</table>", "</samp>");
+  elements.push("<tr>", "<td>Beneficiary</td>", `<td>${registeredWallet}</td>`, "</tr>", "</table>", "</samp>");
 
   return elements.join("\n");
 }
