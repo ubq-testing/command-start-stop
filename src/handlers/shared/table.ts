@@ -5,7 +5,7 @@ export function assignTableComment({ taskDeadline, registeredWallet, isTaskStale
     elements.push(
       "<tr>",
       "<td>Warning!</td>",
-      `<td><This task was created over ${daysElapsedSinceTaskCreation} days ago. Please confirm that this issue specification is accurate before starting.</td>`,
+      `<td>This task was created over ${daysElapsedSinceTaskCreation} days ago. Please confirm that this issue specification is accurate before starting.</td>`,
       "</tr>"
     );
   }
