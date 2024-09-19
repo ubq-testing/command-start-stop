@@ -19,4 +19,12 @@ describe("Configuration tests", () => {
     const decodedSettings = Value.Decode(startStopSchema, settings);
     expect(decodedSettings.maxConcurrentTasks["admin"]).toEqual(Infinity);
   });
+
+  it("Should normalize maxConcurrentTasks role keys to lowercase when decoded", () => {
+    const settings = Value.Default(startStopSchema, {
+      maxConcurrentTasks: { ADMIN: 20, memBER: 10, CONTRIBUTOR: 2 },
+    }) as StartStopSettings;
+    const decodedSettings = Value.Decode(startStopSchema, settings);
+    expect(decodedSettings.maxConcurrentTasks).toEqual({ admin: 20, member: 10, contributor: 2 });
+  });
 });
