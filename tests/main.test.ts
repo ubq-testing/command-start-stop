@@ -113,7 +113,7 @@ describe("User start/stop", () => {
   });
 
   test("Author's manual unassign should close linked issue", async () => {
-    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => { });
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => {});
     const issue = db.issue.findFirst({ where: { id: { equals: 2 } } }) as unknown as Issue;
     const sender = db.users.findFirst({ where: { id: { equals: 2 } } }) as unknown as PayloadSender;
     const context = createContext(issue, sender, "") as Context<"issues.unassigned">;
@@ -641,17 +641,17 @@ function getSupabase(withData = true) {
         single: jest.fn().mockResolvedValue({
           data: withData
             ? {
-              id: 1,
-              wallets: {
-                address: "0x123",
-              },
-            }
+                id: 1,
+                wallets: {
+                  address: "0x123",
+                },
+              }
             : {
-              id: 1,
-              wallets: {
-                address: undefined,
+                id: 1,
+                wallets: {
+                  address: undefined,
+                },
               },
-            },
         }),
       }),
     }),
