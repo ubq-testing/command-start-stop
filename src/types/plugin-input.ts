@@ -11,7 +11,7 @@ export interface PluginInputs<T extends SupportedEventsU = SupportedEventsU, TU 
   ref: string;
 }
 
-const rolesWithReviewAuthority = T.Array(T.String({ default: ["COLLABORATOR", "OWNER", "MEMBER"] }))
+const rolesWithReviewAuthority = T.Array(T.String(), { default: ["COLLABORATOR", "OWNER", "MEMBER"] });
 
 function maxConcurrentTasks() {
   return T.Transform(T.Record(T.String(), T.Integer(), { default: { member: 10, contributor: 2 } }))
