@@ -246,7 +246,7 @@ describe("User start/stop", () => {
         errorDetails.push(`${error.path}: ${error.message}`);
       }
 
-      expect(errorDetails).toContain("/BOT_USER_ID: Required property");
+      expect(errorDetails).toContain("/BOT_USER_ID: Expected union value");
     }
   });
 
