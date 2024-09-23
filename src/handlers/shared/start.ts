@@ -1,10 +1,10 @@
 import { Context, ISSUE_TYPE, Label } from "../../types";
-import { isParentIssue, getAvailableOpenedPullRequests, getAssignedIssues, addAssignees, addCommentToIssue, getTimeValue } from "../../utils/issue";
-import { checkTaskStale } from "./check-task-stale";
-import { hasUserBeenUnassigned } from "./check-assignments";
-import { getUserRoleAndTaskLimit } from "./get-user-task-limit-and-role";
+import { addAssignees, addCommentToIssue, getAssignedIssues, getAvailableOpenedPullRequests, getTimeValue, isParentIssue } from "../../utils/issue";
 import { HttpStatusCode, Result } from "../result-types";
+import { hasUserBeenUnassigned } from "./check-assignments";
+import { checkTaskStale } from "./check-task-stale";
 import { generateAssignmentComment, getDeadline } from "./generate-assignment-comment";
+import { getUserRoleAndTaskLimit } from "./get-user-task-limit-and-role";
 import structuredMetadata from "./structured-metadata";
 import { assignTableComment } from "./table";
 
@@ -16,6 +16,10 @@ export async function start(
 ): Promise<Result> {
   const { logger, config } = context;
   const { taskStaleTimeoutDuration } = config;
+
+  if (!sender) {
+    throw new Error(logger.error(`Skipping '/start' since there is no sender in the context.`).logMessage.raw);
+  }
 
   // is it a child issue?
   if (issue.body && isParentIssue(issue.body)) {
