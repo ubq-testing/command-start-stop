@@ -15,13 +15,7 @@ export default {
         } else if (request.method === "POST") {
           const webhookPayload = await request.json();
 
-          const { errors } = validateAndDecodeSchemas(env, webhookPayload.settings);
-          if (errors.length) {
-            return new Response(JSON.stringify({ message: `Bad Request: invalid configuration.`, errors }), {
-              status: 400,
-              headers: { "content-type": "application/json" },
-            });
-          }
+          validateAndDecodeSchemas(env, webhookPayload.settings);
           return new Response(JSON.stringify({ message: "Schema is valid" }), { status: 200, headers: { "content-type": "application/json" } });
         }
       }
@@ -41,14 +35,7 @@ export default {
 
       const webhookPayload = await request.json();
 
-      const { errors, decodedSettings, decodedEnv } = validateAndDecodeSchemas(env, webhookPayload.settings);
-
-      if (errors.length) {
-        return new Response(JSON.stringify({ message: `Bad Request: invalid configuration.`, errors }), {
-          status: 400,
-          headers: { "content-type": "application/json" },
-        });
-      }
+      const { decodedSettings, decodedEnv } = validateAndDecodeSchemas(env, webhookPayload.settings);
 
       webhookPayload.env = decodedEnv;
       webhookPayload.settings = decodedSettings;
@@ -60,8 +47,8 @@ export default {
   },
 };
 
-function handleUncaughtError(error: unknown) {
-  console.error(error);
+function handleUncaughtError(errors: unknown) {
+  console.error(errors);
   const status = 500;
-  return new Response(JSON.stringify({ error }), { status: status, headers: { "content-type": "application/json" } });
+  return new Response(JSON.stringify(errors), { status: status, headers: { "content-type": "application/json" } });
 }
