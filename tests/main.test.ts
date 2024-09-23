@@ -1,15 +1,16 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect } from "@jest/globals";
 import { drop } from "@mswjs/data";
+import { createClient } from "@supabase/supabase-js";
+import { cleanLogString, Logs } from "@ubiquity-dao/ubiquibot-logger";
+import dotenv from "dotenv";
+import { createAdapters } from "../src/adapters";
+import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
 import { Context, envConfigValidator, Sender, SupportedEventsU } from "../src/types";
 import { db } from "./__mocks__/db";
+import issueTemplate from "./__mocks__/issue-template";
 import { server } from "./__mocks__/node";
 import usersGet from "./__mocks__/users-get.json";
-import { expect, describe, beforeAll, beforeEach, afterAll, afterEach } from "@jest/globals";
-import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
-import issueTemplate from "./__mocks__/issue-template";
-import { createAdapters } from "../src/adapters";
-import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
-import { Logs, cleanLogString } from "@ubiquity-dao/ubiquibot-logger";
+
 dotenv.config();
 
 type Issue = Context<"issue_comment.created">["payload"]["issue"];
@@ -599,7 +600,7 @@ const maxConcurrentDefaults = {
 
 function createContext(
   issue: Record<string, unknown>,
-  sender: Record<string, unknown>,
+  sender: Record<string, unknown> | undefined,
   body = "/start",
   appId: string | null = "1",
   startRequiresWallet = false
