@@ -14,7 +14,8 @@ export function assignTableComment({ taskDeadline, registeredWallet, isTaskStale
     elements.push("<tr>", "<td>Deadline</td>", `<td>${taskDeadline}</td>`, "</tr>");
   }
 
-  elements.push("<tr>", "<td>Beneficiary</td>", `<td>${registeredWallet}</td>`, "</tr>", "</table>", "</samp>");
+  const walletMessage = registeredWallet ?? "> [!WARNING]\n> Register your wallet to be eligible for rewards.";
+  elements.push("<tr>", "<td>Beneficiary</td>", `<td>${walletMessage}</td>`, "</tr>", "</table>", "</samp>");
 
   return elements.join("\n");
 }
