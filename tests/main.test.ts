@@ -141,7 +141,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("You are not assigned to this task");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "You are not assigned to this task" } });
   });
 
   test("User can't stop an issue without assignees", async () => {
@@ -151,7 +151,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/stop") as Context<"issue_comment.created">;
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
 
-    await expect(userStartStop(context)).rejects.toThrow("You are not assigned to this task");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "You are not assigned to this task" } });
   });
 
   test("User can't start an issue that's already assigned", async () => {
@@ -162,7 +162,9 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("This issue is already assigned. Please choose another unassigned task.");
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "This issue is already assigned. Please choose another unassigned task." },
+    });
   });
 
   test("User can't start an issue without a price label", async () => {
@@ -173,7 +175,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("No price label is set to calculate the duration");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "No price label is set to calculate the duration" } });
   });
 
   test("User can't start an issue without a wallet address", async () => {
@@ -194,7 +196,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
 
-    await expect(userStartStop(context)).rejects.toThrow("This issue is closed, please choose another.");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "This issue is closed, please choose another." } });
   });
 
   test("User can't start an issue that's a parent issue", async () => {
@@ -205,7 +207,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("Skipping '/start' since the issue is a parent issue");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "Skipping '/start' since the issue is a parent issue" } });
   });
 
   test("should set maxLimits to 6 if the user is a member", async () => {
@@ -218,7 +220,9 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender) as unknown as Context;
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
-    await expect(userStartStop(context)).rejects.toThrow("You have reached your max task limit. Please close out some tasks before assigning new ones.");
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "You have reached your max task limit. Please close out some tasks before assigning new ones." },
+    });
 
     expect(memberLimit).toEqual(6);
   });
@@ -230,7 +234,9 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/start") as Context<"issue_comment.created">;
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("user2 you were previously unassigned from this task. You cannot be reassigned.");
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "user2 you were previously unassigned from this task. You cannot be reassigned." },
+    });
   });
 
   test("Should throw if no BOT_USER_ID is set", async () => {
