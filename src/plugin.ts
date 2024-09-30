@@ -43,12 +43,10 @@ export async function startStopTask(inputs: PluginInputs, env: Env) {
     let errorMessage;
     if (err instanceof LogReturn) {
       errorMessage = err;
-    } else if (err instanceof Error) {
-      errorMessage = context.logger.error(err.message, { error: err });
+      await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
     } else {
-      errorMessage = context.logger.error("An error occurred", { err });
+      context.logger.error("An error occurred", { err });
     }
-    await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
   }
 }
 

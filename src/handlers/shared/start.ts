@@ -18,7 +18,7 @@ export async function start(
   const { taskStaleTimeoutDuration } = config;
 
   if (!sender) {
-    throw new Error(logger.error(`Skipping '/start' since there is no sender in the context.`).logMessage.raw);
+    throw logger.error(`Skipping '/start' since there is no sender in the context.`);
   }
 
   // is it a child issue?
@@ -27,7 +27,7 @@ export async function start(
       context,
       "```diff\n# Please select a child issue from the specification checklist to work on. The '/start' command is disabled on parent issues.\n```"
     );
-    throw new Error(logger.error(`Skipping '/start' since the issue is a parent issue`).logMessage.raw);
+    throw logger.error(`Skipping '/start' since the issue is a parent issue`);
   }
 
   let commitHash: string | null = null;
@@ -46,7 +46,7 @@ export async function start(
   // is it assignable?
 
   if (issue.state === ISSUE_TYPE.CLOSED) {
-    throw new Error(logger.error("This issue is closed, please choose another.", { issueNumber: issue.number }).logMessage.raw);
+    throw logger.error("This issue is closed, please choose another.", { issueNumber: issue.number });
   }
 
   const assignees = issue?.assignees ?? [];
@@ -54,11 +54,9 @@ export async function start(
   // find out if the issue is already assigned
   if (assignees.length !== 0) {
     const isCurrentUserAssigned = !!assignees.find((assignee) => assignee?.login === sender.login);
-    throw new Error(
-      logger.error(
-        isCurrentUserAssigned ? "You are already assigned to this task." : "This issue is already assigned. Please choose another unassigned task.",
-        { issueNumber: issue.number }
-      ).logMessage.raw
+    throw logger.error(
+      isCurrentUserAssigned ? "You are already assigned to this task." : "This issue is already assigned. Please choose another unassigned task.",
+      { issueNumber: issue.number }
     );
   }
 
@@ -81,7 +79,7 @@ export async function start(
   }
 
   if (error) {
-    throw new Error(logger.error(error, { issueNumber: issue.number }).logMessage.raw);
+    throw logger.error(error, { issueNumber: issue.number });
   }
 
   // get labels
@@ -89,7 +87,7 @@ export async function start(
   const priceLabel = labels.find((label: Label) => label.name.startsWith("Price: "));
 
   if (!priceLabel) {
-    throw new Error(logger.error("No price label is set to calculate the duration", { issueNumber: issue.number }).logMessage.raw);
+    throw logger.error("No price label is set to calculate the duration", { issueNumber: issue.number });
   }
 
   const deadline = getDeadline(labels);
@@ -161,7 +159,7 @@ async function handleTaskLimitChecks(username: string, context: Context, logger:
   }
 
   if (await hasUserBeenUnassigned(context, username)) {
-    throw new Error(logger.error(`${username} you were previously unassigned from this task. You cannot be reassigned.`, { username }).logMessage.raw);
+    throw logger.error(`${username} you were previously unassigned from this task. You cannot be reassigned.`, { username });
   }
 
   return true;
