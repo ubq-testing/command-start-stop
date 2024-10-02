@@ -1,3 +1,4 @@
+import type { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
@@ -171,16 +172,17 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
 
 export async function getAllPullRequests(context: Context, state: "open" | "closed" | "all" = "open", username: string) {
   const { payload } = context;
+  const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
+    q: `org:${payload.repository.owner.login} author:${username} state:${state}`,
+    per_page: 100,
+    order: "desc",
+    sort: "created",
+  };
 
   try {
-    return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, {
-      q: `org:${payload.repository.owner.login} author:${username} state:${state}`,
-      per_page: 100,
-      order: "desc",
-      sort: "created",
-    })) as GitHubIssueSearch["items"];
+    return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
   } catch (err: unknown) {
-    throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error }).logMessage.raw);
+    throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
   }
 }
 
