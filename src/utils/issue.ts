@@ -1,4 +1,4 @@
-import type { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
+import { RestEndpointMethodTypes } from "@octokit/rest";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
