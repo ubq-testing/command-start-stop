@@ -1,4 +1,4 @@
-import type { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
+import { RestEndpointMethodTypes } from "@octokit/rest";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
@@ -142,9 +142,7 @@ async function confirmMultiAssignment(context: Context, issueNumber: number, use
   });
 
   if (!assignees?.length) {
-    throw new Error(
-      logger.error("We detected that this task was not assigned to anyone. Please report this to the maintainers.", { issueNumber, usernames }).logMessage.raw
-    );
+    throw logger.error("We detected that this task was not assigned to anyone. Please report this to the maintainers.", { issueNumber, usernames });
   }
 
   if (isPrivate && assignees?.length <= 1) {
