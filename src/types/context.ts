@@ -1,10 +1,10 @@
 import { paginateGraphQLInterface } from "@octokit/plugin-paginate-graphql";
-import { EmitterWebhookEvent as WebhookEvent, EmitterWebhookEventName as WebhookEventName } from "@octokit/webhooks";
 import { Octokit } from "@octokit/rest";
-import { StartStopSettings } from "./plugin-input";
+import { EmitterWebhookEvent as WebhookEvent, EmitterWebhookEventName as WebhookEventName } from "@octokit/webhooks";
+import { Logs } from "@ubiquity-dao/ubiquibot-logger";
 import { createAdapters } from "../adapters";
 import { Env } from "./env";
-import { Logs } from "@ubiquity-dao/ubiquibot-logger";
+import { PluginSettings } from "./plugin-input";
 
 export type SupportedEventsU = "issue_comment.created" | "issues.assigned" | "pull_request.opened" | "pull_request.edited" | "issues.unassigned";
 
@@ -21,7 +21,7 @@ export interface Context<T extends SupportedEventsU = SupportedEventsU, TU exten
   payload: TU["payload"];
   octokit: InstanceType<typeof Octokit> & paginateGraphQLInterface;
   adapters: ReturnType<typeof createAdapters>;
-  config: StartStopSettings;
+  config: PluginSettings;
   env: Env;
   logger: Logs;
 }
