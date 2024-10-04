@@ -23,7 +23,7 @@ jobs:
 
       - name: Install deps and run configuration update
         run: |
-          yarn install --immutable --immutable-cache --check-cache
+          yarn install
           yarn tsc --noCheck --project tsconfig.json
 
       - name: Update manifest configuration using GitHub Script
