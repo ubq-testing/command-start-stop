@@ -39,7 +39,7 @@ jobs:
 
             manifest["configuration"] = JSON.parse(configuration);
 
-            const updatedManifest = JSON.stringify(manifest, null, 2)
+            const updatedManifest = JSON.stringify(manifest, null, 2);
             console.log('Updated manifest:', updatedManifest);
             fs.writeFileSync(manifestPath, updatedManifest);
 
