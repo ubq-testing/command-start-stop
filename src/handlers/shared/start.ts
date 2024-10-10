@@ -1,4 +1,5 @@
 import { Context, ISSUE_TYPE, Label } from "../../types";
+import { isUserCollaborator } from "../../utils/get-user-association";
 import { addAssignees, addCommentToIssue, getAssignedIssues, getAvailableOpenedPullRequests, getTimeValue, isParentIssue } from "../../utils/issue";
 import { HttpStatusCode, Result } from "../result-types";
 import { hasUserBeenUnassigned } from "./check-assignments";
@@ -82,12 +83,24 @@ export async function start(
     throw logger.error(error, { issueNumber: issue.number });
   }
 
-  // get labels
   const labels = issue.labels ?? [];
   const priceLabel = labels.find((label: Label) => label.name.startsWith("Price: "));
 
   if (!priceLabel) {
     throw logger.error("No price label is set to calculate the duration", { issueNumber: issue.number });
+  }
+
+  // Checks if non-collaborators can be assigned to the issue
+  for (const label of labels) {
+    if (label.description?.includes("collaborator only")) {
+      for (const user of toAssign) {
+        if (!(await isUserCollaborator(context, user))) {
+          throw logger.error("Non-collaborators cannot be assigned to this issue", {
+            username: user,
+          });
+        }
+      }
+    }
   }
 
   const deadline = getDeadline(labels);
