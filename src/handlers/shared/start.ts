@@ -95,7 +95,7 @@ export async function start(
     if (label.description?.includes("collaborator only")) {
       for (const user of toAssign) {
         if (!(await isUserCollaborator(context, user))) {
-          throw logger.error("Non-collaborators cannot be assigned to this issue", {
+          throw logger.error("Only collaborators can be assigned to this issue.", {
             username: user,
           });
         }
