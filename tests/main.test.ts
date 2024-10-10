@@ -604,7 +604,7 @@ const maxConcurrentDefaults = {
   contributor: 4,
 };
 
-function createContext(
+export function createContext(
   issue: Record<string, unknown>,
   sender: Record<string, unknown> | undefined,
   body = "/start",
@@ -641,7 +641,7 @@ function createContext(
   };
 }
 
-function getSupabase(withData = true) {
+export function getSupabase(withData = true) {
   const mockedTable = {
     select: jest.fn().mockReturnValue({
       eq: jest.fn().mockReturnValue({
