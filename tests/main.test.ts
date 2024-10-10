@@ -32,6 +32,7 @@ const SUCCESS_MESSAGE = "Task assigned successfully";
 
 describe("User start/stop", () => {
   beforeEach(async () => {
+    drop(db);
     jest.clearAllMocks();
     jest.resetModules();
     await setupTests();
