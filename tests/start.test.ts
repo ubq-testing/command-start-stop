@@ -67,9 +67,9 @@ describe("Collaborator tests", () => {
     context.adapters = createAdapters(getSupabase(), context);
     await expect(start(context, issue, sender, [])).rejects.toMatchObject({
       logMessage: {
-        diff: "```diff\n! Non-collaborators cannot be assigned to this issue\n```",
+        diff: "```diff\n! Only collaborators can be assigned to this issue.\n```",
         level: "error",
-        raw: "Non-collaborators cannot be assigned to this issue",
+        raw: "Only collaborators can be assigned to this issue.",
         type: "error",
       },
     });
