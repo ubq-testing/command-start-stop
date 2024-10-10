@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect } from "@jest/globals";
 import { drop } from "@mswjs/data";
 import { createClient } from "@supabase/supabase-js";
-import { cleanLogString, Logs } from "@ubiquity-dao/ubiquibot-logger";
+import { cleanLogString, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
 import { createAdapters } from "../src/adapters";
 import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
@@ -550,7 +550,7 @@ async function setupTests() {
     id: 5,
     actor: {
       id: 1,
-      login: "ubiquibot[bot]",
+      login: "ubiquity-os[bot]",
       type: "Bot",
     },
     assignee: {

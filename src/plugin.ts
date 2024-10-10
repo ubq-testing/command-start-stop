@@ -1,7 +1,7 @@
 import { paginateGraphQL } from "@octokit/plugin-paginate-graphql";
 import { Octokit } from "@octokit/rest";
 import { createClient } from "@supabase/supabase-js";
-import { LogReturn, Logs } from "@ubiquity-dao/ubiquibot-logger";
+import { LogReturn, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import { createAdapters } from "./adapters";
 import { userPullRequest, userSelfAssign, userStartStop, userUnassigned } from "./handlers/user-start-stop";
 import { Context, Env, PluginInputs } from "./types";

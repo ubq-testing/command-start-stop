@@ -2809,9 +2809,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ubiquibot/command-start-stop@workspace:.":
+"@ubiquity-os/command-start-stop@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@ubiquibot/command-start-stop@workspace:."
+  resolution: "@ubiquity-os/command-start-stop@workspace:."
   dependencies:
     "@commitlint/cli": "npm:19.3.0"
     "@commitlint/config-conventional": "npm:19.2.2"
@@ -2830,7 +2830,7 @@ __metadata:
     "@types/jest": "npm:29.5.12"
     "@types/ms": "npm:^0.7.34"
     "@types/node": "npm:20.14.5"
-    "@ubiquity-dao/ubiquibot-logger": "npm:^1.3.1"
+    "@ubiquity-os/ubiquity-os-logger": "npm:^1.3.2"
     cspell: "npm:8.9.0"
     dotenv: "npm:^16.4.4"
     eslint: "npm:9.5.0"
@@ -2856,10 +2856,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ubiquity-dao/ubiquibot-logger@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "@ubiquity-dao/ubiquibot-logger@npm:1.3.1"
-  checksum: 10c0/b6a4f2171e70126c12f1f7c0f18fe670597bf31e9c0dc19ecfe442a9118401c799a35be32e1d4785f23d0e9c1c6c0be2548769b958a5ed198d849f11520d0c57
+"@ubiquity-os/ubiquity-os-logger@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "@ubiquity-os/ubiquity-os-logger@npm:1.3.2"
+  checksum: 10c0/bf5c90c21fd18bda11c632b75d626a94675e2dc1b5492c0970e7ee27b5f7999046d3c9ee0ef096cdc4c1b58deb8cb4f5f7464ca18848d41082d61c4e75bb7d20
   languageName: node
   linkType: hard
 
