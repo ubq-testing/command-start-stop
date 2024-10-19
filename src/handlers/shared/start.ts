@@ -84,6 +84,7 @@ export async function start(
 
   if (toAssign.length === 0 && teammates.length > 1) {
     error = "All teammates have reached their max task limit. Please close out some tasks before assigning new ones.";
+    throw logger.error(error, { issueNumber: issue.number });
   } else if (toAssign.length === 0) {
     error = "You have reached your max task limit. Please close out some tasks before assigning new ones.";
     let issues = ""
@@ -100,9 +101,6 @@ Currently assigned tasks:
 ${issues}
 
     `)
-  }
-
-  if (error) {
     throw new Error(logger.error(error, { issueNumber: issue.number }).logMessage.raw)
   }
 
