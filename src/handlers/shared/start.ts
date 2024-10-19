@@ -64,10 +64,19 @@ export async function start(
   teammates.push(sender.login);
 
   const toAssign = [];
+  let assignedIssues : any[]= [];
   // check max assigned issues
   for (const user of teammates) {
     if (await handleTaskLimitChecks(user, context, logger, sender.login)) {
       toAssign.push(user);
+    } else {
+      const issues = await getAssignedIssues(context, user);
+      assignedIssues = issues.map((el) => {
+        return {
+          title: el.title,
+          html_url: el.html_url,
+        }
+      })
     }
   }
 
@@ -77,10 +86,24 @@ export async function start(
     error = "All teammates have reached their max task limit. Please close out some tasks before assigning new ones.";
   } else if (toAssign.length === 0) {
     error = "You have reached your max task limit. Please close out some tasks before assigning new ones.";
+    let issues = ""
+    assignedIssues.forEach((el) => {
+      issues = issues.concat(`- [${el.title}](${el.html_url})\n`)
+    })
+
+    await addCommentToIssue(context, `
+      
+> [!WARNING]
+> ${error}
+
+Currently assigned tasks:
+${issues}
+
+    `)
   }
 
   if (error) {
-    throw logger.error(error, { issueNumber: issue.number });
+    throw new Error(logger.error(error, { issueNumber: issue.number }).logMessage.raw)
   }
 
   const labels = issue.labels ?? [];
