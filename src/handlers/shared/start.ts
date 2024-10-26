@@ -64,13 +64,14 @@ export async function start(
   teammates.push(sender.login);
 
   const toAssign = [];
-  let assignedIssues : GitHubIssueSearch["items"] = [];
+  let assignedIssues: GitHubIssueSearch["items"] = [];
   // check max assigned issues
   for (const user of teammates) {
-    if (await handleTaskLimitChecks(user, context, logger, sender.login)) {
+    const { isWithinLimit, issues } = await handleTaskLimitChecks(user, context, logger, sender.login);
+    if (isWithinLimit) {
       toAssign.push(user);
     } else {
-      assignedIssues = assignedIssues.concat(await getAssignedIssues(context, user));
+      assignedIssues = assignedIssues.concat(issues);
     }
   }
 
@@ -80,26 +81,29 @@ export async function start(
     throw logger.error(error, { issueNumber: issue.number });
   } else if (toAssign.length === 0) {
     error = "You have reached your max task limit. Please close out some tasks before assigning new ones.";
-    let issues = ""
+    let issues = "";
     const urlPattern = /https:\/\/(github.com\/(\S+)\/(\S+)\/issues\/(\d+))/g;
     assignedIssues.forEach((el) => {
-      const matches = [...el.html_url.matchAll(urlPattern)][0]
+      const matches = [...el.html_url.matchAll(urlPattern)][0];
       if (matches) {
-        issues = issues.concat(`- ###### [${matches[2]}/${matches[3]} - ${el.title} #${matches[4]}](https://www.${matches[1]})\n`)
+        issues = issues.concat(`- ###### [${matches[2]}/${matches[3]} - ${el.title} #${matches[4]}](https://www.${matches[1]})\n`);
       } else {
-        issues = issues.concat(`- ###### [${el.title}](${el.html_url})\n`)
+        issues = issues.concat(`- ###### [${el.title}](${el.html_url})\n`);
       }
-    })
+    });
 
-    await addCommentToIssue(context, `
+    await addCommentToIssue(
+      context,
+      `
       
 > [!WARNING]
 > ${error}
 
 ${issues}
 
-`)
-    throw new Error(logger.error(error, { issueNumber: issue.number }).logMessage.raw)
+`
+    );
+    throw new Error(logger.error(error, { issueNumber: issue.number }).logMessage.raw);
   }
 
   const labels = issue.labels ?? [];
@@ -187,12 +191,18 @@ async function handleTaskLimitChecks(username: string, context: Context, logger:
       limit,
     });
 
-    return false;
+    return {
+      isWithinLimit: false,
+      issues: assignedIssues,
+    };
   }
 
   if (await hasUserBeenUnassigned(context, username)) {
     throw logger.error(`${username} you were previously unassigned from this task. You cannot be reassigned.`, { username });
   }
 
-  return true;
+  return {
+    isWithinLimit: true,
+    issues: [],
+  };
 }

@@ -1,9 +1,8 @@
-import { Octokit, RestEndpointMethodTypes } from "@octokit/rest";
+import { RestEndpointMethodTypes } from "@octokit/rest";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
-import { createAppAuth } from "@octokit/auth-app";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;
@@ -11,17 +10,15 @@ export function isParentIssue(body: string) {
 }
 
 export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"]> {
-
-  let installations = await context.jwtOctokit.apps.listInstallations();
-  let orgs_installed = ""
-  installations.data.forEach((el) => {
-    orgs_installed += `org:${el.account?.login} `
-  })
+  let orgsInstalled = "";
+  context.organizations.forEach((org) => {
+    orgsInstalled += `org:${org} `;
+  });
 
   try {
     return await context.octokit
       .paginate(context.octokit.search.issuesAndPullRequests, {
-        q: `${orgs_installed} assignee:${username} is:open is:issue`,
+        q: `${orgsInstalled} assignee:${username} is:open is:issue`,
         per_page: 100,
         order: "desc",
         sort: "created",
@@ -177,16 +174,13 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
 }
 
 export async function getAllPullRequests(context: Context, state: "open" | "closed" | "all" = "open", username: string) {
-  const { payload } = context;
-
-  let installations = await context.jwtOctokit.apps.listInstallations();
-  let orgs_installed = ""
-  installations.data.forEach((el) => {
-    orgs_installed += `org:${el.account?.login} `
-  })
+  let orgsInstalled = "";
+  context.organizations.forEach((org) => {
+    orgsInstalled += `org:${org} `;
+  });
 
   const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
-    q: `${orgs_installed} author:${username} state:${state}`,
+    q: `${orgsInstalled} author:${username} state:${state}`,
     per_page: 100,
     order: "desc",
     sort: "created",

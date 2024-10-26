@@ -4,29 +4,37 @@ import { createClient } from "@supabase/supabase-js";
 import { LogReturn, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import { createAdapters } from "./adapters";
 import { userPullRequest, userSelfAssign, userStartStop, userUnassigned } from "./handlers/user-start-stop";
-import { Context, Env, PluginInputs } from "./types";
+import { Context, Env, GitHubIssueSearch, PluginInputs } from "./types";
 import { addCommentToIssue } from "./utils/issue";
-import { createAppAuth } from "@octokit/auth-app";
+
+async function listOrganizations(): Promise<string[]> {
+  const res = await fetch("https://raw.githubusercontent.com/ubiquity/devpool-directory/refs/heads/__STORAGE__/devpool-issues.json");
+  const devpoolIssues: GitHubIssueSearch["items"] = await res.json();
+  const orgsSet: Set<string> = new Set();
+
+  const urlPattern = /https:\/\/(github.com\/(\S+)\/(\S+)\/issues\/(\d+))/g;
+  devpoolIssues.forEach((issue) => {
+    const matches = [...issue.html_url.matchAll(urlPattern)][0];
+    if (matches) {
+      orgsSet.add(matches[2]);
+    }
+  });
+
+  return [...orgsSet];
+}
 
 export async function startStopTask(inputs: PluginInputs, env: Env) {
   const customOctokit = Octokit.plugin(paginateGraphQL);
   const octokit = new customOctokit({ auth: inputs.authToken });
   const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
-
-  const jwtOctokit = new Octokit({
-    authStrategy: createAppAuth,
-    auth: {
-      appId: env.APP_ID,
-      privateKey: env.APP_PRIVATE_KEY,
-    },
-  });
+  const organizations = await listOrganizations();
 
   const context: Context = {
     eventName: inputs.eventName,
     payload: inputs.eventPayload,
     config: inputs.settings,
+    organizations: organizations,
     octokit,
-    jwtOctokit,
     env,
     logger: new Logs("info"),
     adapters: {} as ReturnType<typeof createAdapters>,

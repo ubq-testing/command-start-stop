@@ -221,9 +221,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender) as unknown as Context;
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
-    await expect(userStartStop(context)).rejects.toThrowError(
-      "You have reached your max task limit. Please close out some tasks before assigning new ones."
-    );
+    await expect(userStartStop(context)).rejects.toThrowError("You have reached your max task limit. Please close out some tasks before assigning new ones.");
 
     expect(memberLimit).toEqual(6);
   });
@@ -633,14 +631,12 @@ export function createContext(
       rolesWithReviewAuthority: ["ADMIN", "OWNER", "MEMBER"],
     },
     octokit: new octokit.Octokit(),
-    jwtOctokit: new octokit.Octokit(),
     eventName: "issue_comment.created" as SupportedEventsU,
+    organizations: ["ubiquity"],
     env: {
       SUPABASE_KEY: "key",
       SUPABASE_URL: "url",
       BOT_USER_ID: appId as unknown as number,
-      APP_ID: "app_id",
-      APP_PRIVATE_KEY: "private_key",
     },
   };
 }
