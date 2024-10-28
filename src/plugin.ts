@@ -11,10 +11,14 @@ async function listOrganizations(logger: Logs): Promise<string[]> {
   const orgsSet: Set<string> = new Set();
   const urlPattern = /https:\/\/(github.com\/(\S+)\/(\S+)\/issues\/(\d+))/g;
 
-  const response = await fetch("https://raw.githubusercontent.com/ubiquity/devpool-directory/refs/heads/__STORAGE__/devpool-issues.json");
+  const url = "https://raw.githubusercontent.com/ubiquity/devpool-directory/refs/heads/__STORAGE__/devpool-issues.json";
+  const response = await fetch(url);
   if (!response.ok) {
-    const errorMessage = await response.text();
-    throw logger.error("Error fetching file devpool-issues.json.", { errorMessage });
+    if (response.status === 404) {
+      throw logger.error(`Error 404: unable to fetch file devpool-issues.json ${url}`);
+    } else {
+      throw logger.error("Error fetching file devpool-issues.json.", { status: response.status });
+    }
   }
 
   const devpoolIssues: GitHubIssueSearch["items"] = await response.json();
