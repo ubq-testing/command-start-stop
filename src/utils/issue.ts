@@ -197,8 +197,8 @@ export async function getAllPullRequestsWithRetry(
   try {
     return await getAllPullRequests(context, state, username);
   } catch (error) {
-    context.logger.debug("Will retry fetching all pull requests...");
-    return await getAllPullRequestsFromApi(context, state, username);
+    context.logger.info("Will retry re-fetching all pull requests...");
+    return getAllPullRequestsFromApi(context, state, username);
   }
 }
 
@@ -268,8 +268,8 @@ export function getTimeValue(timeString: string): number {
   return timeValue;
 }
 
-async function getOpenedPullRequestsForUser(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequests>> {
-  return await getAllPullRequests(context, "open", username);
+async function getOpenedPullRequestsForUser(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequestsWithRetry>> {
+  return getAllPullRequestsWithRetry(context, "open", username);
 }
 
 /**
