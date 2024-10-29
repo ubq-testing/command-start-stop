@@ -1,18 +1,17 @@
 import { RestEndpointMethodTypes } from "@octokit/rest";
 import { Endpoints } from "@octokit/types";
-import { ReturnType } from "@sinclair/typebox";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
-import { getAllPullRequestsFromApi } from "./get-pull-requests";
+import { getAllPullRequestsFallback, getAssignedIssuesFallback } from "./get-pull-requests-fallback";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;
   return body.match(parentPattern);
 }
 
-export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"]> {
+export async function getAssignedIssues(context: Context, username: string) {
   const payload = context.payload;
 
   try {
@@ -28,8 +27,9 @@ export async function getAssignedIssues(context: Context, username: string): Pro
           return issue.state === "open" && (issue.assignee?.login === username || issue.assignees?.some((assignee) => assignee.login === username));
         })
       );
-  } catch (err: unknown) {
-    throw new Error(context.logger.error("Fetching assigned issues failed!", { error: err as Error }).logMessage.raw);
+  } catch (err) {
+    context.logger.info("Will try re-fetching assigned issues...", { error: err as Error });
+    return getAssignedIssuesFallback(context, username);
   }
 }
 
@@ -197,8 +197,8 @@ export async function getAllPullRequestsWithRetry(
   try {
     return await getAllPullRequests(context, state, username);
   } catch (error) {
-    context.logger.info("Will retry re-fetching all pull requests...");
-    return getAllPullRequestsFromApi(context, state, username);
+    context.logger.info("Will retry re-fetching all pull requests...", { error: error as Error });
+    return getAllPullRequestsFallback(context, state, username);
   }
 }
 
@@ -236,12 +236,12 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
   if (!reviewDelayTolerance) return [];
 
   const openedPullRequests = await getOpenedPullRequestsForUser(context, username);
-  const result: Awaited<ReturnType<typeof getOpenedPullRequestsForUser>> = [];
+  const result: (typeof openedPullRequests)[number][] = [];
 
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
     if (!openedPullRequest) continue;
-    const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.url);
+    const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.html_url);
     const reviews = await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo);
 
     if (reviews.length > 0) {

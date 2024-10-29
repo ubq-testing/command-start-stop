@@ -10,7 +10,7 @@ function isHttpError(error: unknown): error is { status: number; message: string
  * Fetches all open pull requests within a specified organization created by a particular user.
  * This method is slower than using a search query, but should work even if the user has his activity set to private.
  */
-export async function getAllPullRequestsFromApi(
+export async function getAllPullRequestsFallback(
   context: Context,
   state: Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"]["state"],
   username: string
@@ -19,7 +19,7 @@ export async function getAllPullRequestsFromApi(
   const organization = context.payload.repository.owner.login;
 
   try {
-    const repos = await octokit.paginate(octokit.repos.listForOrg, {
+    const repositories = await octokit.paginate(octokit.repos.listForOrg, {
       org: organization,
       per_page: 100,
       type: "all",
@@ -27,7 +27,7 @@ export async function getAllPullRequestsFromApi(
 
     const allPrs: RestEndpointMethodTypes["pulls"]["list"]["response"]["data"] = [];
 
-    const tasks = repos.map(async (repo) => {
+    const tasks = repositories.map(async (repo) => {
       try {
         const prs = await octokit.paginate(octokit.pulls.list, {
           owner: organization,
@@ -53,5 +53,39 @@ export async function getAllPullRequestsFromApi(
   } catch (error) {
     logger.fatal("Failed to fetch pull requests for organization", { error: error as Error });
     throw error;
+  }
+}
+
+export async function getAssignedIssuesFallback(context: Context, username: string) {
+  const org = context.payload.repository.owner.login;
+  const assignedIssues = [];
+
+  try {
+    const repositories = await context.octokit.paginate(context.octokit.rest.repos.listForOrg, {
+      org,
+      type: "all",
+      per_page: 100,
+    });
+
+    for (const repo of repositories) {
+      const issues = await context.octokit.paginate(context.octokit.rest.issues.listForRepo, {
+        owner: org,
+        repo: repo.name,
+        assignee: username,
+        state: "open",
+        per_page: 100,
+      });
+
+      assignedIssues.push(
+        ...issues.filter(
+          (issue) =>
+            issue.pull_request === undefined && (issue.assignee?.login === username || issue.assignees?.some((assignee) => assignee.login === username))
+        )
+      );
+    }
+
+    return assignedIssues;
+  } catch (err: unknown) {
+    throw new Error(context.logger.error("Fetching assigned issues failed!", { error: err as Error }).logMessage.raw);
   }
 }
