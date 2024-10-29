@@ -9,7 +9,7 @@ import { addCommentToIssue } from "./utils/issue";
 
 async function listOrganizations(logger: Logs): Promise<string[]> {
   const orgsSet: Set<string> = new Set();
-  const urlPattern = /https:\/\/(github.com\/(\S+)\/(\S+)\/issues\/(\d+))/g;
+  const urlPattern = /https:\/\/github\.com\/(\S+)\/\S+\/issues\/\d+/;
 
   const url = "https://raw.githubusercontent.com/ubiquity/devpool-directory/refs/heads/__STORAGE__/devpool-issues.json";
   const response = await fetch(url);
@@ -23,9 +23,9 @@ async function listOrganizations(logger: Logs): Promise<string[]> {
 
   const devpoolIssues: GitHubIssueSearch["items"] = await response.json();
   devpoolIssues.forEach((issue) => {
-    const matches = [...issue.html_url.matchAll(urlPattern)][0];
-    if (matches) {
-      orgsSet.add(matches[2]);
+    const match = issue.html_url.match(urlPattern);
+    if (match) {
+      orgsSet.add(match[1]);
     }
   });
 
@@ -53,18 +53,7 @@ export async function startStopTask(inputs: PluginInputs, env: Env) {
   try {
     const organizations = await listOrganizations(context.logger);
     context.organizations = organizations;
-  } catch (err) {
-    let errorMessage;
-    if (err instanceof LogReturn) {
-      errorMessage = err;
-      await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
-    } else {
-      context.logger.error("An error occurred", { err });
-    }
-    return;
-  }
 
-  try {
     switch (context.eventName) {
       case "issue_comment.created":
         return await userStartStop(context);
