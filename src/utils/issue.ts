@@ -1,8 +1,8 @@
-import { RestEndpointMethodTypes } from "@octokit/rest";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
+import { getAllPullRequests, TransformedPullRequest } from "./get-pull-requests";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;
@@ -170,21 +170,21 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
   await confirmMultiAssignment(context, issueNo, assignees);
 }
 
-export async function getAllPullRequests(context: Context, state: "open" | "closed" | "all" = "open", username: string) {
-  const { payload } = context;
-  const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
-    q: `org:${payload.repository.owner.login} author:${username} state:${state}`,
-    per_page: 100,
-    order: "desc",
-    sort: "created",
-  };
-
-  try {
-    return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
-  } catch (err: unknown) {
-    throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
-  }
-}
+// export async function getAllPullRequests(context: Context, state: "open" | "closed" | "all" = "open", username: string) {
+//   const { payload } = context;
+//   const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
+//     q: `org:${payload.repository.owner.login} author:${username} state:${state}`,
+//     per_page: 100,
+//     order: "desc",
+//     sort: "created",
+//   };
+//
+//   try {
+//     return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
+//   } catch (err: unknown) {
+//     throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
+//   }
+// }
 
 export async function getAllPullRequestReviews(context: Context, pullNumber: number, owner: string, repo: string) {
   const {
@@ -220,11 +220,12 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
   if (!reviewDelayTolerance) return [];
 
   const openedPullRequests = await getOpenedPullRequests(context, username);
-  const result = [] as typeof openedPullRequests;
+  const result: TransformedPullRequest[] = [];
 
-  for (let i = 0; i < openedPullRequests.length; i++) {
+  for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
-    const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.html_url);
+    if (!openedPullRequest) continue;
+    const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.url);
     const reviews = await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo);
 
     if (reviews.length > 0) {
@@ -234,7 +235,7 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
       }
     }
 
-    if (reviews.length === 0 && new Date().getTime() - new Date(openedPullRequest.created_at).getTime() >= getTimeValue(reviewDelayTolerance)) {
+    if (reviews.length === 0 && new Date().getTime() - new Date(openedPullRequest.createdAt).getTime() >= getTimeValue(reviewDelayTolerance)) {
       result.push(openedPullRequest);
     }
   }
@@ -252,8 +253,8 @@ export function getTimeValue(timeString: string): number {
 }
 
 async function getOpenedPullRequests(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequests>> {
-  const prs = await getAllPullRequests(context, "open", username);
-  return prs.filter((pr) => pr.pull_request && pr.state === "open");
+  const prs = await getAllPullRequests({ context, state: ["OPEN"], organization: context.payload.repository.owner.login });
+  return prs.filter((pr) => pr.author === username);
 }
 
 /**
