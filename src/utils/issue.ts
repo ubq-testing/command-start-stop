@@ -16,7 +16,7 @@ export async function getAssignedIssues(context: Context, username: string) {
 
   try {
     return await context.octokit
-      .paginate(context.octokit.search.issuesAndPullRequests, {
+      .paginate(context.octokit.rest.search.issuesAndPullRequests, {
         q: `org:${payload.repository.owner.login} assignee:${username} is:open is:issue`,
         per_page: 100,
         order: "desc",
@@ -183,7 +183,7 @@ async function getAllPullRequests(context: Context, state: Endpoints["GET /repos
   };
 
   try {
-    return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
+    return (await context.octokit.paginate(context.octokit.rest.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
   } catch (err: unknown) {
     throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
   }
@@ -208,7 +208,7 @@ export async function getAllPullRequestReviews(context: Context, pullNumber: num
   } = context;
   try {
     return (
-      await context.octokit.paginate(context.octokit.pulls.listReviews, {
+      await context.octokit.paginate(context.octokit.rest.pulls.listReviews, {
         owner,
         repo,
         pull_number: pullNumber,
