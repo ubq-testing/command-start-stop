@@ -22,7 +22,6 @@ const mockOctokit = {
   },
 };
 
-// Mock context
 const context: Context = {
   eventName: "pull_request",
   payload: {
