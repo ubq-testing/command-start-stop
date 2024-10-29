@@ -1,8 +1,10 @@
+import { RestEndpointMethodTypes } from "@octokit/rest";
+import { Endpoints } from "@octokit/types";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
-import { getAllPullRequests, TransformedPullRequest } from "./get-pull-requests";
+import { getAllPullRequestsFromApi } from "./get-pull-requests";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;
@@ -170,21 +172,34 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
   await confirmMultiAssignment(context, issueNo, assignees);
 }
 
-// export async function getAllPullRequests(context: Context, state: "open" | "closed" | "all" = "open", username: string) {
-//   const { payload } = context;
-//   const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
-//     q: `org:${payload.repository.owner.login} author:${username} state:${state}`,
-//     per_page: 100,
-//     order: "desc",
-//     sort: "created",
-//   };
-//
-//   try {
-//     return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
-//   } catch (err: unknown) {
-//     throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
-//   }
-// }
+async function getAllPullRequests(context: Context, state: Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"]["state"] = "open", username: string) {
+  const { payload } = context;
+  const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
+    q: `org:${payload.repository.owner.login} author:${username} state:${state}`,
+    per_page: 100,
+    order: "desc",
+    sort: "created",
+  };
+
+  try {
+    return (await context.octokit.paginate(context.octokit.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
+  } catch (err: unknown) {
+    throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
+  }
+}
+
+export async function getAllPullRequestsWithRetry(
+  context: Context,
+  state: Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"]["state"],
+  username: string
+) {
+  try {
+    return await getAllPullRequests(context, state, username);
+  } catch (error) {
+    context.logger.debug("Will retry fetching all pull requests...");
+    return await getAllPullRequestsFromApi(context, state, username);
+  }
+}
 
 export async function getAllPullRequestReviews(context: Context, pullNumber: number, owner: string, repo: string) {
   const {
@@ -219,8 +234,8 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
   const { reviewDelayTolerance } = context.config;
   if (!reviewDelayTolerance) return [];
 
-  const openedPullRequests = await getOpenedPullRequests(context, username);
-  const result: TransformedPullRequest[] = [];
+  const openedPullRequests = await getAllPullRequestsWithRetry(context, "open", username);
+  const result = [];
 
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
@@ -235,7 +250,7 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
       }
     }
 
-    if (reviews.length === 0 && new Date().getTime() - new Date(openedPullRequest.createdAt).getTime() >= getTimeValue(reviewDelayTolerance)) {
+    if (reviews.length === 0 && new Date().getTime() - new Date(openedPullRequest.created_at).getTime() >= getTimeValue(reviewDelayTolerance)) {
       result.push(openedPullRequest);
     }
   }
@@ -252,10 +267,9 @@ export function getTimeValue(timeString: string): number {
   return timeValue;
 }
 
-async function getOpenedPullRequests(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequests>> {
-  const prs = await getAllPullRequests({ context, state: ["OPEN"], organization: context.payload.repository.owner.login });
-  return prs.filter((pr) => pr.author === username);
-}
+// async function getOpenedPullRequestsForUser(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequests>> {
+//   return await getAllPullRequests(context, "open", username);
+// }
 
 /**
  * Extracts the task id from the PR body. The format is:

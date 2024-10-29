@@ -1,141 +1,57 @@
-import { Organization, PullRequest, PullRequestState, Repository } from "@octokit/graphql-schema";
+import { RestEndpointMethodTypes } from "@octokit/rest";
+import type { Endpoints } from "@octokit/types";
 import { Context } from "../types";
 
-type QueryResponse = {
-  organization: Pick<Organization, "repositories"> & {
-    repositories: {
-      nodes: Array<
-        Pick<Repository, "name"> & {
-          pullRequests: {
-            nodes: Array<
-              Pick<PullRequest, "number" | "title" | "url" | "createdAt"> & {
-                author: {
-                  login: string;
-                } | null;
-              }
-            >;
-            pageInfo: {
-              endCursor: string | null;
-              hasNextPage: boolean;
-            };
-          };
-        }
-      >;
-      pageInfo: {
-        endCursor: string | null;
-        hasNextPage: boolean;
-      };
-    };
-  };
-};
-
-interface TransformedPullRequest {
-  repository: string;
-  number: number;
-  title: string;
-  url: string;
-  author: string | null;
-  createdAt: string;
+function isHttpError(error: unknown): error is { status: number; message: string } {
+  return typeof error === "object" && error !== null && "status" in error && "message" in error;
 }
 
-interface FetchPullRequestsParams {
-  context: Context;
-  organization: string;
-  state?: PullRequestState[];
-}
+/**
+ * Fetches all open pull requests within a specified organization created by a particular user.
+ * This method is slower than using a search query, but should work even if the user has his activity set to private.
+ */
+export async function getAllPullRequestsFromApi(
+  context: Context,
+  state: Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"]["state"],
+  username: string
+) {
+  const { octokit, logger } = context;
+  const organization = context.payload.repository.owner.login;
 
-const QUERY_PULL_REQUESTS = /* GraphQL */ `
-  query ($organization: String!, $state: [PullRequestState!]!, $repoAfter: String, $prAfter: String) {
-    organization(login: $organization) {
-      repositories(first: 100, after: $repoAfter) {
-        nodes {
-          name
-          pullRequests(states: $state, first: 100, after: $prAfter) {
-            nodes {
-              number
-              title
-              url
-              author {
-                login
-              }
-              createdAt
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
-          }
+  try {
+    const repos = await octokit.paginate(octokit.repos.listForOrg, {
+      org: organization,
+      per_page: 100,
+      type: "all",
+    });
+
+    const allPrs: RestEndpointMethodTypes["pulls"]["list"]["response"]["data"] = [];
+
+    const tasks = repos.map(async (repo) => {
+      try {
+        const prs = await octokit.paginate(octokit.pulls.list, {
+          owner: organization,
+          repo: repo.name,
+          state,
+          per_page: 100,
+        });
+        const userPrs = prs.filter((pr) => pr.user?.login === username);
+        allPrs.push(...userPrs);
+      } catch (error) {
+        if (isHttpError(error) && (error.status === 404 || error.status === 403)) {
+          logger.error(`Could not find pull requests for repository ${repo.url}, skipping: ${error}`);
+          return;
         }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
+        logger.fatal("Failed to fetch pull requests for repository", { error: error as Error });
+        throw error;
       }
-    }
+    });
+
+    await Promise.all(tasks);
+
+    return allPrs;
+  } catch (error) {
+    logger.fatal("Failed to fetch pull requests for organization", { error: error as Error });
+    throw error;
   }
-`;
-
-async function getAllPullRequests({ context, organization, state = ["OPEN"] }: FetchPullRequestsParams): Promise<TransformedPullRequest[]> {
-  const { octokit } = context;
-  const allPullRequests: TransformedPullRequest[] = [];
-  let hasNextRepoPage = true;
-  let repoAfter: string | null = null;
-
-  while (hasNextRepoPage) {
-    try {
-      const response = (await octokit.graphql(QUERY_PULL_REQUESTS, {
-        organization,
-        state,
-        repoAfter,
-        prAfter: null,
-      })) as QueryResponse;
-
-      const { repositories } = response.organization;
-
-      for (const repo of repositories.nodes) {
-        let hasNextPrPage = true;
-        let prAfter: string | null = null;
-
-        while (hasNextPrPage) {
-          const prResponse = (await octokit.graphql<QueryResponse>(QUERY_PULL_REQUESTS, {
-            organization,
-            state,
-            repoAfter,
-            prAfter,
-          })) as QueryResponse;
-
-          const currentRepo = prResponse.organization.repositories.nodes.find((r) => r?.name === repo.name);
-
-          if (currentRepo && currentRepo.pullRequests.nodes?.length) {
-            const transformedPrs = (currentRepo.pullRequests.nodes.filter((o) => o) as PullRequest[]).map((pr) => ({
-              repository: repo.name,
-              number: pr.number,
-              title: pr.title,
-              url: pr.url,
-              author: pr.author?.login ?? null,
-              createdAt: pr.createdAt,
-            }));
-
-            allPullRequests.push(...transformedPrs);
-          }
-
-          hasNextPrPage = currentRepo?.pullRequests.pageInfo.hasNextPage ?? false;
-          prAfter = currentRepo?.pullRequests.pageInfo.endCursor ?? null;
-
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-      }
-
-      hasNextRepoPage = repositories.pageInfo.hasNextPage;
-      repoAfter = repositories.pageInfo.endCursor;
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      throw error;
-    }
-  }
-
-  return allPullRequests;
 }
-
-export { getAllPullRequests };
-export type { FetchPullRequestsParams, TransformedPullRequest };
