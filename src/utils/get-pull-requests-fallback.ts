@@ -19,7 +19,7 @@ export async function getAllPullRequestsFallback(
   const organization = context.payload.repository.owner.login;
 
   try {
-    const repositories = await octokit.paginate(octokit.repos.listForOrg, {
+    const repositories = await octokit.paginate(octokit.rest.repos.listForOrg, {
       org: organization,
       per_page: 100,
       type: "all",
@@ -29,7 +29,7 @@ export async function getAllPullRequestsFallback(
 
     const tasks = repositories.map(async (repo) => {
       try {
-        const prs = await octokit.paginate(octokit.pulls.list, {
+        const prs = await octokit.paginate(octokit.rest.pulls.list, {
           owner: organization,
           repo: repo.name,
           state,
