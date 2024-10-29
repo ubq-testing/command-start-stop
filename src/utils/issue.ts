@@ -1,5 +1,6 @@
 import { RestEndpointMethodTypes } from "@octokit/rest";
 import { Endpoints } from "@octokit/types";
+import { ReturnType } from "@sinclair/typebox";
 import ms from "ms";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, Review } from "../types/payload";
@@ -234,8 +235,8 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
   const { reviewDelayTolerance } = context.config;
   if (!reviewDelayTolerance) return [];
 
-  const openedPullRequests = await getAllPullRequestsWithRetry(context, "open", username);
-  const result = [];
+  const openedPullRequests = await getOpenedPullRequestsForUser(context, username);
+  const result: Awaited<ReturnType<typeof getOpenedPullRequestsForUser>> = [];
 
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
@@ -267,9 +268,9 @@ export function getTimeValue(timeString: string): number {
   return timeValue;
 }
 
-// async function getOpenedPullRequestsForUser(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequests>> {
-//   return await getAllPullRequests(context, "open", username);
-// }
+async function getOpenedPullRequestsForUser(context: Context, username: string): Promise<ReturnType<typeof getAllPullRequests>> {
+  return await getAllPullRequests(context, "open", username);
+}
 
 /**
  * Extracts the task id from the PR body. The format is:
