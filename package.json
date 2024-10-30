@@ -17,7 +17,7 @@
     "knip-ci": "knip --no-exit-code --reporter json --config .github/knip.ts",
     "prepare": "husky install",
     "test": "jest --setupFiles dotenv/config --coverage",
-    "worker": "wrangler dev --env dev --port 4001"
+    "worker": "wrangler dev --env dev --port 4000"
   },
   "keywords": [
     "typescript",
@@ -30,6 +30,7 @@
     "@octokit/graphql-schema": "15.25.0",
     "@octokit/plugin-paginate-graphql": "5.2.2",
     "@octokit/rest": "20.1.1",
+    "@octokit/types": "^13.6.1",
     "@octokit/webhooks": "13.2.7",
     "@sinclair/typebox": "^0.32.5",
     "@supabase/supabase-js": "2.42.0",
