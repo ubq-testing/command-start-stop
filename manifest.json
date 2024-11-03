@@ -46,6 +46,10 @@
           }
         }
       },
+      "checkAssignedIssues": {
+        "default": "org",
+        "type": "string"
+      },
       "emptyWalletText": {
         "default": "Please set your wallet address with the /wallet command first and try again.",
         "type": "string"
@@ -68,6 +72,7 @@
       "taskStaleTimeoutDuration",
       "startRequiresWallet",
       "maxConcurrentTasks",
+      "checkAssignedIssues",
       "emptyWalletText",
       "rolesWithReviewAuthority"
     ]

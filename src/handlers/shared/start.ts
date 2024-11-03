@@ -82,11 +82,11 @@ export async function start(
   } else if (toAssign.length === 0) {
     error = "You have reached your max task limit. Please close out some tasks before assigning new ones.";
     let issues = "";
-    const urlPattern = /https:\/\/(github.com\/(\S+)\/(\S+)\/issues\/(\d+))/g;
+    const urlPattern = /https:\/\/(github.com\/(\S+)\/(\S+)\/issues\/(\d+))/;
     assignedIssues.forEach((el) => {
-      const matches = [...el.html_url.matchAll(urlPattern)][0];
-      if (matches) {
-        issues = issues.concat(`- ###### [${matches[2]}/${matches[3]} - ${el.title} #${matches[4]}](https://www.${matches[1]})\n`);
+      const match = el.html_url.match(urlPattern);
+      if (match) {
+        issues = issues.concat(`- ###### [${match[2]}/${match[3]} - ${el.title} #${match[4]}](https://www.${match[1]})\n`);
       } else {
         issues = issues.concat(`- ###### [${el.title}](${el.html_url})\n`);
       }

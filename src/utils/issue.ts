@@ -10,15 +10,19 @@ export function isParentIssue(body: string) {
 }
 
 export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"]> {
-  let orgsInstalled = "";
-  context.organizations.forEach((org) => {
-    orgsInstalled += `org:${org} `;
-  });
+  let repoOrgQuery = "";
+  if (context.config.checkAssignedIssues === "repo") {
+    repoOrgQuery = `repo:${context.payload.repository.full_name}`;
+  } else {
+    context.organizations.forEach((org) => {
+      repoOrgQuery += `org:${org} `;
+    });
+  }
 
   try {
     return await context.octokit
       .paginate(context.octokit.search.issuesAndPullRequests, {
-        q: `${orgsInstalled} assignee:${username} is:open is:issue`,
+        q: `${repoOrgQuery} assignee:${username} is:open is:issue`,
         per_page: 100,
         order: "desc",
         sort: "created",
@@ -174,13 +178,16 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
 }
 
 export async function getAllPullRequests(context: Context, state: "open" | "closed" | "all" = "open", username: string) {
-  let orgsInstalled = "";
-  context.organizations.forEach((org) => {
-    orgsInstalled += `org:${org} `;
-  });
-
+  let repoOrgQuery = "";
+  if (context.config.checkAssignedIssues === "repo") {
+    repoOrgQuery = `repo:${context.payload.repository.full_name}`;
+  } else {
+    context.organizations.forEach((org) => {
+      repoOrgQuery += `org:${org} `;
+    });
+  }
   const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
-    q: `${orgsInstalled} author:${username} state:${state}`,
+    q: `${repoOrgQuery} author:${username} state:${state}`,
     per_page: 100,
     order: "desc",
     sort: "created",

@@ -627,6 +627,7 @@ export function createContext(
       taskStaleTimeoutDuration: "30 Days",
       maxConcurrentTasks: maxConcurrentDefaults,
       startRequiresWallet,
+      checkAssignedIssues: "org",
       emptyWalletText: "Please set your wallet address with the /wallet command first and try again.",
       rolesWithReviewAuthority: ["ADMIN", "OWNER", "MEMBER"],
     },
