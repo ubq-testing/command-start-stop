@@ -115,7 +115,7 @@ ${issues}
 
   // Checks if non-collaborators can be assigned to the issue
   for (const label of labels) {
-    if (label.description?.includes("collaborator only")) {
+    if (label.description?.toLowerCase().includes("collaborator only")) {
       for (const user of toAssign) {
         if (!(await isUserCollaborator(context, user))) {
           throw logger.error("Only collaborators can be assigned to this issue.", {
