@@ -622,6 +622,9 @@ export function createContext(
       action: "created",
       installation: { id: 1 } as unknown as Context["payload"]["installation"],
       organization: { login: "ubiquity" } as unknown as Context["payload"]["organization"],
+      assignee: {
+        ...sender,
+      },
     } as Context["payload"],
     logger: new Logs("debug"),
     config: {
