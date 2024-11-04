@@ -5,7 +5,7 @@ import { cleanLogString, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
 import { createAdapters } from "../src/adapters";
 import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
-import { Context, envConfigValidator, Sender, SupportedEventsU } from "../src/types";
+import { AssignedIssueScope, Context, envConfigValidator, Sender, SupportedEventsU } from "../src/types";
 import { db } from "./__mocks__/db";
 import issueTemplate from "./__mocks__/issue-template";
 import { server } from "./__mocks__/node";
@@ -631,7 +631,7 @@ export function createContext(
       taskStaleTimeoutDuration: "30 Days",
       maxConcurrentTasks: maxConcurrentDefaults,
       startRequiresWallet,
-      assignedIssueScope: "org",
+      assignedIssueScope: AssignedIssueScope.ORG,
       emptyWalletText: "Please set your wallet address with the /wallet command first and try again.",
       rolesWithReviewAuthority: ["ADMIN", "OWNER", "MEMBER"],
     },

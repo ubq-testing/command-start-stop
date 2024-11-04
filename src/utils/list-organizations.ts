@@ -1,4 +1,4 @@
-import { Context, GitHubIssueSearch } from "../types";
+import { AssignedIssueScope, Context, GitHubIssueSearch } from "../types";
 
 export async function listOrganizations(context: Context): Promise<string[]> {
   const {
@@ -7,9 +7,9 @@ export async function listOrganizations(context: Context): Promise<string[]> {
     payload,
   } = context;
 
-  if (assignedIssueScope === "repo" || assignedIssueScope === "org") {
+  if (assignedIssueScope === AssignedIssueScope.REPO || assignedIssueScope === AssignedIssueScope.ORG) {
     return [payload.repository.owner.login];
-  } else if (assignedIssueScope === "network") {
+  } else if (assignedIssueScope === AssignedIssueScope.NETWORK) {
     const orgsSet: Set<string> = new Set();
     const urlPattern = /https:\/\/github\.com\/(\S+)\/\S+\/issues\/\d+/;
 

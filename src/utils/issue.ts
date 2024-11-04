@@ -5,6 +5,7 @@ import { Context } from "../types/context";
 import { GitHubIssueSearch, RepoIssues, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
 import { getAllPullRequestsFallback, getAssignedIssuesFallback } from "./get-pull-requests-fallback";
+import { AssignedIssueScope } from "../types";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;
@@ -13,7 +14,7 @@ export function isParentIssue(body: string) {
 
 export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"] | RepoIssues> {
   let repoOrgQuery = "";
-  if (context.config.assignedIssueScope === "repo") {
+  if (context.config.assignedIssueScope === AssignedIssueScope.REPO) {
     repoOrgQuery = `repo:${context.payload.repository.full_name}`;
   } else {
     context.organizations.forEach((org) => {
@@ -182,7 +183,7 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
 
 async function getAllPullRequests(context: Context, state: Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"]["state"] = "open", username: string) {
   let repoOrgQuery = "";
-  if (context.config.assignedIssueScope === "repo") {
+  if (context.config.assignedIssueScope === AssignedIssueScope.REPO) {
     repoOrgQuery = `repo:${context.payload.repository.full_name}`;
   } else {
     context.organizations.forEach((org) => {
