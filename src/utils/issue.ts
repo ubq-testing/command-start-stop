@@ -215,8 +215,12 @@ export async function getAllPullRequestReviews(context: Context, pullNumber: num
         per_page: 100,
       })
     ).filter((review) => rolesWithReviewAuthority.includes(review.author_association)) as Review[];
-  } catch (err: unknown) {
-    throw new Error(context.logger.error("Fetching all pull request reviews failed!", { error: err as Error }).logMessage.raw);
+  } catch (err) {
+    if (err && typeof err === "object" && "status" in err && err.status === 404) {
+      return [];
+    } else {
+      throw new Error(context.logger.error("Fetching all pull request reviews failed!", { error: err as Error }).logMessage.raw);
+    }
   }
 }
 
