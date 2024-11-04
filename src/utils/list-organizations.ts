@@ -2,14 +2,14 @@ import { Context, GitHubIssueSearch } from "../types";
 
 export async function listOrganizations(context: Context): Promise<string[]> {
   const {
-    config: { checkAssignedIssues },
+    config: { assignedIssueScope },
     logger,
     payload,
   } = context;
 
-  if (checkAssignedIssues === "repo" || checkAssignedIssues === "org") {
+  if (assignedIssueScope === "repo" || assignedIssueScope === "org") {
     return [payload.repository.owner.login];
-  } else if (checkAssignedIssues === "network") {
+  } else if (assignedIssueScope === "network") {
     const orgsSet: Set<string> = new Set();
     const urlPattern = /https:\/\/github\.com\/(\S+)\/\S+\/issues\/\d+/;
 
@@ -34,5 +34,5 @@ export async function listOrganizations(context: Context): Promise<string[]> {
     return [...orgsSet];
   }
 
-  throw new Error("Unknown checkAssignedIssues value. Supported values: ['org', 'repo', 'network']");
+  throw new Error("Unknown assignedIssueScope value. Supported values: ['org', 'repo', 'network']");
 }

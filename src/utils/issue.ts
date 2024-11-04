@@ -13,7 +13,7 @@ export function isParentIssue(body: string) {
 
 export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"] | RepoIssues> {
   let repoOrgQuery = "";
-  if (context.config.checkAssignedIssues === "repo") {
+  if (context.config.assignedIssueScope === "repo") {
     repoOrgQuery = `repo:${context.payload.repository.full_name}`;
   } else {
     context.organizations.forEach((org) => {
@@ -182,7 +182,7 @@ export async function addAssignees(context: Context, issueNo: number, assignees:
 
 async function getAllPullRequests(context: Context, state: Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"]["state"] = "open", username: string) {
   let repoOrgQuery = "";
-  if (context.config.checkAssignedIssues === "repo") {
+  if (context.config.assignedIssueScope === "repo") {
     repoOrgQuery = `repo:${context.payload.repository.full_name}`;
   } else {
     context.organizations.forEach((org) => {

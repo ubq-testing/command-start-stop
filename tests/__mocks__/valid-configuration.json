@@ -7,7 +7,7 @@
     "member": 10,
     "contributor": 2
   },
-  "checkAssignedIssues": "org",
+  "assignedIssueScope": "org",
   "emptyWalletText": "Please set your wallet address with the /wallet command first and try again.",
   "rolesWithReviewAuthority": ["OWNER", "ADMIN", "MEMBER"]
 }

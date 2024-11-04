@@ -8,7 +8,7 @@ describe("Configuration tests", () => {
       reviewDelayTolerance: "1 Day",
       taskStaleTimeoutDuration: "30 Days",
       startRequiresWallet: true,
-      checkAssignedIssues: "org",
+      assignedIssueScope: "org",
       emptyWalletText: "Please set your wallet address with the /wallet command first and try again.",
       maxConcurrentTasks: { admin: 20, member: 10, contributor: 2 },
       rolesWithReviewAuthority: ["OWNER", "ADMIN", "MEMBER"],

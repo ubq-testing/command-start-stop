@@ -46,7 +46,7 @@
           }
         }
       },
-      "checkAssignedIssues": {
+      "assignedIssueScope": {
         "default": "org",
         "type": "string"
       },
@@ -72,7 +72,7 @@
       "taskStaleTimeoutDuration",
       "startRequiresWallet",
       "maxConcurrentTasks",
-      "checkAssignedIssues",
+      "assignedIssueScope",
       "emptyWalletText",
       "rolesWithReviewAuthority"
     ]
