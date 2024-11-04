@@ -23,18 +23,15 @@ export async function getAssignedIssues(context: Context, username: string): Pro
   }
 
   try {
-    return context.octokit
-      .paginate(context.octokit.rest.search.issuesAndPullRequests, {
-        q: `${repoOrgQuery} assignee:${username} is:open is:issue`,
-        per_page: 100,
-        order: "desc",
-        sort: "created",
-      })
-      .then((issues) =>
-        issues.filter((issue) => {
-          return issue.state === "open" && (issue.assignee?.login === username || issue.assignees?.some((assignee) => assignee.login === username));
-        })
-      );
+    const issues = await context.octokit.paginate(context.octokit.rest.search.issuesAndPullRequests, {
+      q: `${repoOrgQuery} is:open is:issue assignee:${username}`,
+      per_page: 100,
+      order: "desc",
+      sort: "created",
+    });
+    return issues.filter((issue) => {
+      return issue.assignee?.login === username || issue.assignees?.some((assignee) => assignee.login === username);
+    });
   } catch (err) {
     context.logger.info("Will try re-fetching assigned issues...", { error: err as Error });
     return getAssignedIssuesFallback(context, username);
@@ -192,15 +189,14 @@ async function getAllPullRequests(context: Context, state: Endpoints["GET /repos
   }
 
   const query: RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] = {
-    q: `${repoOrgQuery} author:${username} state:${state}`,
+    q: `${repoOrgQuery} author:${username} state:${state} is:pr`,
     per_page: 100,
     order: "desc",
     sort: "created",
   };
 
   try {
-    const prs = (await context.octokit.paginate(context.octokit.rest.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
-    return prs.filter((pr) => pr.pull_request && pr.state === "open");
+    return (await context.octokit.paginate(context.octokit.rest.search.issuesAndPullRequests, query)) as GitHubIssueSearch["items"];
   } catch (err: unknown) {
     throw new Error(context.logger.error("Fetching all pull requests failed!", { error: err as Error, query }).logMessage.raw);
   }
