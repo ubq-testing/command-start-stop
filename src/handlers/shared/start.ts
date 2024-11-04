@@ -1,4 +1,4 @@
-import { Context, GitHubIssueSearch, ISSUE_TYPE, Label } from "../../types";
+import { AssignedIssue, Context, ISSUE_TYPE, Label } from "../../types";
 import { isUserCollaborator } from "../../utils/get-user-association";
 import { addAssignees, addCommentToIssue, getAssignedIssues, getAvailableOpenedPullRequests, getTimeValue, isParentIssue } from "../../utils/issue";
 import { HttpStatusCode, Result } from "../result-types";
@@ -64,14 +64,19 @@ export async function start(
   teammates.push(sender.login);
 
   const toAssign = [];
-  let assignedIssues: GitHubIssueSearch["items"] = [];
+  let assignedIssues: AssignedIssue[] = [];
   // check max assigned issues
   for (const user of teammates) {
     const { isWithinLimit, issues } = await handleTaskLimitChecks(user, context, logger, sender.login);
     if (isWithinLimit) {
       toAssign.push(user);
     } else {
-      assignedIssues = assignedIssues.concat(issues);
+      issues.forEach((issue) => {
+        assignedIssues = assignedIssues.concat({
+          title: issue.title,
+          html_url: issue.html_url,
+        });
+      });
     }
   }
 
@@ -103,7 +108,7 @@ ${issues}
 
 `
     );
-    throw new Error(logger.error(error, { issueNumber: issue.number }).logMessage.raw);
+    return { content: error, status: HttpStatusCode.NOT_MODIFIED };
   }
 
   const labels = issue.labels ?? [];

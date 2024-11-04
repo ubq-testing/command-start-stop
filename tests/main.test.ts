@@ -10,6 +10,7 @@ import { db } from "./__mocks__/db";
 import issueTemplate from "./__mocks__/issue-template";
 import { server } from "./__mocks__/node";
 import usersGet from "./__mocks__/users-get.json";
+import { HttpStatusCode } from "../src/handlers/result-types";
 
 dotenv.config();
 
@@ -221,7 +222,10 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender) as unknown as Context;
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
-    await expect(userStartStop(context)).rejects.toThrowError("You have reached your max task limit. Please close out some tasks before assigning new ones.");
+
+    const { content, status } = await userStartStop(context);
+    expect(content).toEqual("You have reached your max task limit. Please close out some tasks before assigning new ones.");
+    expect(status).toEqual(HttpStatusCode.NOT_MODIFIED);
 
     expect(memberLimit).toEqual(6);
   });

@@ -2,7 +2,7 @@ import { RestEndpointMethodTypes } from "@octokit/rest";
 import { Endpoints } from "@octokit/types";
 import ms from "ms";
 import { Context } from "../types/context";
-import { GitHubIssueSearch, Review } from "../types/payload";
+import { GitHubIssueSearch, RepoIssues, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
 import { getAllPullRequestsFallback, getAssignedIssuesFallback } from "./get-pull-requests-fallback";
 
@@ -11,7 +11,7 @@ export function isParentIssue(body: string) {
   return body.match(parentPattern);
 }
 
-export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"]> {
+export async function getAssignedIssues(context: Context, username: string): Promise<GitHubIssueSearch["items"] | RepoIssues> {
   let repoOrgQuery = "";
   if (context.config.checkAssignedIssues === "repo") {
     repoOrgQuery = `repo:${context.payload.repository.full_name}`;
@@ -36,7 +36,7 @@ export async function getAssignedIssues(context: Context, username: string): Pro
       );
   } catch (err) {
     context.logger.info("Will try re-fetching assigned issues...", { error: err as Error });
-    return getAssignedIssuesFallback(context, username) as Promise<GitHubIssueSearch["items"]>;
+    return getAssignedIssuesFallback(context, username);
   }
 }
 

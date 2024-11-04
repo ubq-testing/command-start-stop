@@ -41,7 +41,7 @@ export const pluginSettingsSchema = T.Object(
     taskStaleTimeoutDuration: T.String({ default: "30 Days" }),
     startRequiresWallet: T.Boolean({ default: true }),
     maxConcurrentTasks: maxConcurrentTasks(),
-    checkAssignedIssues: T.String({ default: "org" }),
+    checkAssignedIssues: T.Union([T.Literal("org"), T.Literal("repo"), T.Literal("network")], { default: "org" }),
     emptyWalletText: T.String({ default: "Please set your wallet address with the /wallet command first and try again." }),
     rolesWithReviewAuthority: T.Transform(rolesWithReviewAuthority)
       .Decode((value) => value.map((role) => role.toUpperCase()))
