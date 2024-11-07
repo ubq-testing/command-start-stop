@@ -17,6 +17,13 @@ export async function start(
   const { logger, config } = context;
   const { taskStaleTimeoutDuration } = config;
 
+  const issueLabels = issue.labels.map((label) => label.name);
+
+  if (!config.requiredLabelsToStart.some((label) => issueLabels.includes(label))) {
+    context.logger.info("Issue does not have the required labels to start, nothing to do.");
+    return { status: HttpStatusCode.NOT_MODIFIED };
+  }
+
   if (!sender) {
     throw new Error(logger.error(`Skipping '/start' since there is no sender in the context.`).logMessage.raw);
   }
