@@ -20,8 +20,8 @@ export async function start(
   const issueLabels = issue.labels.map((label) => label.name);
 
   if (!config.requiredLabelsToStart.some((label) => issueLabels.includes(label))) {
-    context.logger.info("Issue does not have the required labels to start, nothing to do.");
-    return { status: HttpStatusCode.NOT_MODIFIED };
+    // The "Priority" label must reflect a business priority, not a development one.
+    throw new Error("This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks.");
   }
 
   if (!sender) {

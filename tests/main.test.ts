@@ -10,7 +10,6 @@ import { db } from "./__mocks__/db";
 import issueTemplate from "./__mocks__/issue-template";
 import { server } from "./__mocks__/node";
 import usersGet from "./__mocks__/users-get.json";
-
 dotenv.config();
 
 type Issue = Context<"issue_comment.created">["payload"]["issue"];
@@ -18,6 +17,8 @@ type PayloadSender = Context["payload"]["sender"];
 
 const octokit = jest.requireActual("@octokit/rest");
 const TEST_REPO = "ubiquity/test-repo";
+const PRIORITY_ONE = "Priority: 1 (Normal)";
+const PRIORITY_LABELS = [PRIORITY_ONE, "Priority: 2 (Medium)", "Priority: 3 (High)", "Priority: 4 (Urgent)", "Priority: 5 (Emergency)"];
 
 beforeAll(() => {
   server.listen();
@@ -267,6 +268,23 @@ describe("User start/stop", () => {
       expect(errorDetails).toContain("Invalid BOT_USER_ID");
     }
   });
+
+  test("Should not allow a user to start if no requiredLabelToStart exists", async () => {
+    const issue = db.issue.findFirst({ where: { id: { equals: 7 } } }) as unknown as Issue;
+    const sender = db.users.findFirst({ where: { id: { equals: 1 } } }) as unknown as PayloadSender;
+
+    const context = createContext(issue, sender, "/start", "1", false, [
+      "Priority: 3 (High)",
+      "Priority: 4 (Urgent)",
+      "Priority: 5 (Emergency)",
+    ]) as Context<"issue_comment.created">;
+
+    context.adapters = createAdapters(getSupabase(), context);
+
+    await expect(userStartStop(context)).rejects.toThrow(
+      "This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks."
+    );
+  });
 });
 
 async function setupTests() {
@@ -317,7 +335,7 @@ async function setupTests() {
     number: 3,
     labels: [
       {
-        name: "Priority: 1 (Normal)",
+        name: PRIORITY_ONE,
       },
     ],
     body: "Third issue body",
@@ -354,6 +372,28 @@ async function setupTests() {
     body: "Sixth issue body",
     owner: "ubiquity",
     assignees: [],
+  });
+
+  db.issue.create({
+    ...issueTemplate,
+    id: 7,
+    node_id: "MDU6SXNzdWUg",
+    title: "Seventh issue",
+    number: 7,
+    body: "Seventh issue body",
+    owner: "ubiquity",
+    assignees: [],
+    labels: [
+      {
+        name: "Price: 200 USD",
+      },
+      {
+        name: "Time: 1h",
+      },
+      {
+        name: PRIORITY_ONE,
+      },
+    ],
   });
 
   db.pull.create({
@@ -590,7 +630,7 @@ function createIssuesForMaxAssignment(n: number, userId: number) {
   for (let i = 0; i < n; i++) {
     db.issue.create({
       ...issueTemplate,
-      id: i + 7,
+      id: i + 8,
       assignee: user,
     });
   }
@@ -607,7 +647,8 @@ function createContext(
   sender: Record<string, unknown> | undefined,
   body = "/start",
   appId: string | null = "1",
-  startRequiresWallet = false
+  startRequiresWallet = false,
+  requiredLabelsToStart: string[] = PRIORITY_LABELS
 ): Context {
   return {
     adapters: {} as ReturnType<typeof createAdapters>,
@@ -628,7 +669,7 @@ function createContext(
       startRequiresWallet,
       emptyWalletText: "Please set your wallet address with the /wallet command first and try again.",
       rolesWithReviewAuthority: ["ADMIN", "OWNER", "MEMBER"],
-      requiredLabelsToStart: ["Priority: 1 (Normal)", "Priority: 2 (Medium)", "Priority: 3 (High)", "Priority: 4 (Urgent)", "Priority: 5 (Emergency)"],
+      requiredLabelsToStart,
     },
     octokit: new octokit.Octokit(),
     eventName: "issue_comment.created" as SupportedEventsU,
