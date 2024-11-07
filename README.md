@@ -44,6 +44,7 @@ To configure your Ubiquibot to run this plugin, add the following to the `.ubiqu
     startRequiresWallet: true # default is true
     emptyWalletText: "Please set your wallet address with the /wallet command first and try again."
     rolesWithReviewAuthority: ["MEMBER", "OWNER"]
+    requiredLabelsToStart: ["Priority: 5 (Emergency)"]
 ```
 
 # Testing

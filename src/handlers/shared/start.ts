@@ -16,11 +16,11 @@ export async function start(
   teammates: string[]
 ): Promise<Result> {
   const { logger, config } = context;
-  const { taskStaleTimeoutDuration } = config;
+  const { taskStaleTimeoutDuration, requiredLabelsToStart } = config;
 
   const issueLabels = issue.labels.map((label) => label.name);
 
-  if (!config.requiredLabelsToStart.some((label) => issueLabels.includes(label))) {
+  if (requiredLabelsToStart.length && !requiredLabelsToStart.some((label) => issueLabels.includes(label))) {
     // The "Priority" label must reflect a business priority, not a development one.
     throw new Error("This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks.");
   }

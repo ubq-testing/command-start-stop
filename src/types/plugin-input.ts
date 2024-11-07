@@ -45,7 +45,7 @@ export const pluginSettingsSchema = T.Object(
     rolesWithReviewAuthority: T.Transform(rolesWithReviewAuthority)
       .Decode((value) => value.map((role) => role.toUpperCase()))
       .Encode((value) => value.map((role) => role.toUpperCase())),
-    requiredLabelsToStart: T.Array(T.String()), // no default, must be in the config
+    requiredLabelsToStart: T.Array(T.String(), { default: [] }),
   },
   {
     default: {},
