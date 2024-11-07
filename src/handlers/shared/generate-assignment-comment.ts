@@ -30,7 +30,12 @@ export async function generateAssignmentComment(context: Context, issueCreatedAt
     deadline: deadline ?? null,
     registeredWallet:
       (await context.adapters.supabase.user.getWalletByUserId(senderId, issueNumber)) ||
-      "Register your wallet address using the following slash command: `/wallet 0x0000...0000`",
+      `
+
+> [!WARNING]
+> Register your wallet to be eligible for rewards.
+
+`,
     tips: `
 > [!TIP]
 > - Use <code>/wallet 0x0000...0000</code> if you want to update your registered payment wallet address.

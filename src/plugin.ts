@@ -1,7 +1,7 @@
 import { paginateGraphQL } from "@octokit/plugin-paginate-graphql";
 import { Octokit } from "@octokit/rest";
 import { createClient } from "@supabase/supabase-js";
-import { LogReturn, Logs } from "@ubiquity-dao/ubiquibot-logger";
+import { LogReturn, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import { createAdapters } from "./adapters";
 import { userPullRequest, userSelfAssign, userStartStop, userUnassigned } from "./handlers/user-start-stop";
 import { Context, Env, PluginInputs } from "./types";
@@ -31,9 +31,9 @@ export async function startStopTask(inputs: PluginInputs, env: Env) {
       case "issues.assigned":
         return await userSelfAssign(context as Context<"issues.assigned">);
       case "pull_request.opened":
-        return await userPullRequest(context as Context<"pull_request.edited">);
-      case "pull_request.edited":
         return await userPullRequest(context as Context<"pull_request.opened">);
+      case "pull_request.edited":
+        return await userPullRequest(context as Context<"pull_request.edited">);
       case "issues.unassigned":
         return await userUnassigned(context);
       default:
@@ -43,12 +43,10 @@ export async function startStopTask(inputs: PluginInputs, env: Env) {
     let errorMessage;
     if (err instanceof LogReturn) {
       errorMessage = err;
-    } else if (err instanceof Error) {
-      errorMessage = context.logger.error(err.message, { error: err });
+      await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
     } else {
-      errorMessage = context.logger.error("An error occurred", { err });
+      context.logger.error("An error occurred", { err });
     }
-    await addCommentToIssue(context, `${errorMessage?.logMessage.diff}\n<!--\n${sanitizeMetadata(errorMessage?.metadata)}\n-->`);
   }
 }
 

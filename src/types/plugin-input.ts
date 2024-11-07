@@ -6,7 +6,7 @@ export interface PluginInputs<T extends SupportedEventsU = SupportedEventsU, TU 
   stateId: string;
   eventName: T;
   eventPayload: TU["payload"];
-  settings: StartStopSettings;
+  settings: PluginSettings;
   authToken: string;
   ref: string;
 }
@@ -35,7 +35,7 @@ function maxConcurrentTasks() {
     .Encode((value) => value);
 }
 
-export const startStopSchema = T.Object(
+export const pluginSettingsSchema = T.Object(
   {
     reviewDelayTolerance: T.String({ default: "1 Day" }),
     taskStaleTimeoutDuration: T.String({ default: "30 Days" }),
@@ -52,5 +52,5 @@ export const startStopSchema = T.Object(
   }
 );
 
-export type StartStopSettings = StaticDecode<typeof startStopSchema>;
-export const startStopSettingsValidator = new StandardValidator(startStopSchema);
+export type PluginSettings = StaticDecode<typeof pluginSettingsSchema>;
+export const startStopSettingsValidator = new StandardValidator(pluginSettingsSchema);

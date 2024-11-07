@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect } from "@jest/globals";
 import { drop } from "@mswjs/data";
 import { createClient } from "@supabase/supabase-js";
-import { cleanLogString, Logs } from "@ubiquity-dao/ubiquibot-logger";
+import { cleanLogString, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
 import { createAdapters } from "../src/adapters";
 import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
@@ -33,6 +33,7 @@ const SUCCESS_MESSAGE = "Task assigned successfully";
 
 describe("User start/stop", () => {
   beforeEach(async () => {
+    drop(db);
     jest.clearAllMocks();
     jest.resetModules();
     await setupTests();
@@ -142,7 +143,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("You are not assigned to this task");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "You are not assigned to this task" } });
   });
 
   test("User can't stop an issue without assignees", async () => {
@@ -152,7 +153,7 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/stop") as Context<"issue_comment.created">;
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
 
-    await expect(userStartStop(context)).rejects.toThrow("You are not assigned to this task");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "You are not assigned to this task" } });
   });
 
   test("User can't start an issue that's already assigned", async () => {
@@ -163,7 +164,9 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("This issue is already assigned. Please choose another unassigned task.");
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "This issue is already assigned. Please choose another unassigned task." },
+    });
   });
 
   test("User can't start an issue without a price label", async () => {
@@ -174,7 +177,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("No price label is set to calculate the duration");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "No price label is set to calculate the duration" } });
   });
 
   test("User can't start an issue without a wallet address", async () => {
@@ -195,7 +198,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
 
-    await expect(userStartStop(context)).rejects.toThrow("This issue is closed, please choose another.");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "This issue is closed, please choose another." } });
   });
 
   test("User can't start an issue that's a parent issue", async () => {
@@ -206,7 +209,7 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("Skipping '/start' since the issue is a parent issue");
+    await expect(userStartStop(context)).rejects.toMatchObject({ logMessage: { raw: "Skipping '/start' since the issue is a parent issue" } });
   });
 
   test("should set maxLimits to 6 if the user is a member", async () => {
@@ -219,7 +222,9 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender) as unknown as Context;
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
-    await expect(userStartStop(context)).rejects.toThrow("You have reached your max task limit. Please close out some tasks before assigning new ones.");
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "You have reached your max task limit. Please close out some tasks before assigning new ones." },
+    });
 
     expect(memberLimit).toEqual(6);
   });
@@ -231,7 +236,9 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender, "/start") as Context<"issue_comment.created">;
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow("user2 you were previously unassigned from this task. You cannot be reassigned.");
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "user2 you were previously unassigned from this task. You cannot be reassigned." },
+    });
   });
 
   test("Should throw if no BOT_USER_ID is set", async () => {
@@ -587,7 +594,7 @@ async function setupTests() {
     id: 5,
     actor: {
       id: 1,
-      login: "ubiquibot[bot]",
+      login: "ubiquity-os[bot]",
       type: "Bot",
     },
     assignee: {
@@ -642,7 +649,7 @@ const maxConcurrentDefaults = {
   contributor: 4,
 };
 
-function createContext(
+export function createContext(
   issue: Record<string, unknown>,
   sender: Record<string, unknown> | undefined,
   body = "/start",
@@ -681,7 +688,7 @@ function createContext(
   };
 }
 
-function getSupabase(withData = true) {
+export function getSupabase(withData = true) {
   const mockedTable = {
     select: jest.fn().mockReturnValue({
       eq: jest.fn().mockReturnValue({

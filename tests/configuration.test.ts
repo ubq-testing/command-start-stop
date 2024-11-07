@@ -1,12 +1,12 @@
 import { Value } from "@sinclair/typebox/value";
-import { startStopSchema, StartStopSettings } from "../src/types";
+import { PluginSettings, pluginSettingsSchema } from "../src/types";
 import cfg from "./__mocks__/valid-configuration.json";
 
 const PRIORITY_LABELS = ["Priority: 1 (Normal)", "Priority: 2 (Medium)", "Priority: 3 (High)", "Priority: 4 (Urgent)", "Priority: 5 (Emergency)"];
 
 describe("Configuration tests", () => {
   it("Should decode the configuration", () => {
-    const settings = Value.Default(startStopSchema, {
+    const settings = Value.Default(pluginSettingsSchema, {
       reviewDelayTolerance: "1 Day",
       taskStaleTimeoutDuration: "30 Days",
       startRequiresWallet: true,
@@ -26,7 +26,7 @@ describe("Configuration tests", () => {
   });
 
   it("Should normalize maxConcurrentTasks role keys to lowercase when decoded", () => {
-    const settings = Value.Default(startStopSchema, {
+    const settings = Value.Default(pluginSettingsSchema, {
       maxConcurrentTasks: { ADMIN: 20, memBER: 10, CONTRIBUTOR: 2 },
       requiredLabelsToStart: PRIORITY_LABELS,
     }) as StartStopSettings;
