@@ -315,7 +315,11 @@ async function setupTests() {
     node_id: "MDU6SXNzdWUy",
     title: "Third issue",
     number: 3,
-    labels: [],
+    labels: [
+      {
+        name: "Priority: 1 (Normal)",
+      },
+    ],
     body: "Third issue body",
     owner: "ubiquity",
   });
@@ -624,6 +628,7 @@ function createContext(
       startRequiresWallet,
       emptyWalletText: "Please set your wallet address with the /wallet command first and try again.",
       rolesWithReviewAuthority: ["ADMIN", "OWNER", "MEMBER"],
+      requiredLabelsToStart: ["Priority: 1 (Normal)", "Priority: 2 (Medium)", "Priority: 3 (High)", "Priority: 4 (Urgent)", "Priority: 5 (Emergency)"],
     },
     octokit: new octokit.Octokit(),
     eventName: "issue_comment.created" as SupportedEventsU,
