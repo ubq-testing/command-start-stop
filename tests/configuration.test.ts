@@ -14,14 +14,14 @@ describe("Configuration tests", () => {
       maxConcurrentTasks: { admin: 20, member: 10, contributor: 2 },
       rolesWithReviewAuthority: ["OWNER", "ADMIN", "MEMBER"],
       requiredLabelsToStart: PRIORITY_LABELS,
-    }) as StartStopSettings;
+    }) as PluginSettings;
     expect(settings).toEqual(cfg);
   });
   it("Should default the admin to infinity if missing from config when decoded", () => {
-    const settings = Value.Default(startStopSchema, {
+    const settings = Value.Default(pluginSettingsSchema, {
       requiredLabelsToStart: PRIORITY_LABELS,
-    }) as StartStopSettings;
-    const decodedSettings = Value.Decode(startStopSchema, settings);
+    }) as PluginSettings;
+    const decodedSettings = Value.Decode(pluginSettingsSchema, settings);
     expect(decodedSettings.maxConcurrentTasks["admin"]).toEqual(Infinity);
   });
 
@@ -29,8 +29,8 @@ describe("Configuration tests", () => {
     const settings = Value.Default(pluginSettingsSchema, {
       maxConcurrentTasks: { ADMIN: 20, memBER: 10, CONTRIBUTOR: 2 },
       requiredLabelsToStart: PRIORITY_LABELS,
-    }) as StartStopSettings;
-    const decodedSettings = Value.Decode(startStopSchema, settings);
+    }) as PluginSettings;
+    const decodedSettings = Value.Decode(pluginSettingsSchema, settings);
     expect(decodedSettings.maxConcurrentTasks).toEqual({ admin: 20, member: 10, contributor: 2 });
   });
 });
