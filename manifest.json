@@ -61,6 +61,12 @@
         "items": {
           "type": "string"
         }
+      },
+      "requiredLabelsToStart": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
     },
     "required": [
@@ -69,7 +75,8 @@
       "startRequiresWallet",
       "maxConcurrentTasks",
       "emptyWalletText",
-      "rolesWithReviewAuthority"
+      "rolesWithReviewAuthority",
+      "requiredLabelsToStart"
     ]
   }
 }
