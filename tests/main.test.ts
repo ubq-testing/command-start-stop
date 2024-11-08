@@ -5,11 +5,13 @@ import { cleanLogString, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
 import { createAdapters } from "../src/adapters";
 import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
-import { Context, envConfigValidator, Sender, SupportedEventsU } from "../src/types";
+import { AssignedIssueScope, Context, envConfigValidator, Sender, SupportedEventsU } from "../src/types";
 import { db } from "./__mocks__/db";
 import issueTemplate from "./__mocks__/issue-template";
 import { server } from "./__mocks__/node";
 import usersGet from "./__mocks__/users-get.json";
+import { HttpStatusCode } from "../src/handlers/result-types";
+
 dotenv.config();
 
 type Issue = Context<"issue_comment.created">["payload"]["issue"];
@@ -222,9 +224,10 @@ describe("User start/stop", () => {
     const context = createContext(issue, sender) as unknown as Context;
 
     context.adapters = createAdapters(getSupabase(), context as unknown as Context);
-    await expect(userStartStop(context)).rejects.toMatchObject({
-      logMessage: { raw: "You have reached your max task limit. Please close out some tasks before assigning new ones." },
-    });
+
+    const { content, status } = await userStartStop(context);
+    expect(content).toEqual("You have reached your max task limit. Please close out some tasks before assigning new ones.");
+    expect(status).toEqual(HttpStatusCode.NOT_MODIFIED);
 
     expect(memberLimit).toEqual(6);
   });
@@ -674,12 +677,14 @@ export function createContext(
       taskStaleTimeoutDuration: "30 Days",
       maxConcurrentTasks: maxConcurrentDefaults,
       startRequiresWallet,
+      assignedIssueScope: AssignedIssueScope.ORG,
       emptyWalletText: "Please set your wallet address with the /wallet command first and try again.",
       rolesWithReviewAuthority: ["ADMIN", "OWNER", "MEMBER"],
       requiredLabelsToStart,
     },
     octokit: new octokit.Octokit(),
     eventName: "issue_comment.created" as SupportedEventsU,
+    organizations: ["ubiquity"],
     env: {
       SUPABASE_KEY: "key",
       SUPABASE_URL: "url",
