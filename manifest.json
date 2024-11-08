@@ -46,6 +46,23 @@
           }
         }
       },
+      "assignedIssueScope": {
+        "default": "org",
+        "anyOf": [
+          {
+            "const": "org",
+            "type": "string"
+          },
+          {
+            "const": "repo",
+            "type": "string"
+          },
+          {
+            "const": "network",
+            "type": "string"
+          }
+        ]
+      },
       "emptyWalletText": {
         "default": "Please set your wallet address with the /wallet command first and try again.",
         "type": "string"
@@ -68,6 +85,7 @@
       "taskStaleTimeoutDuration",
       "startRequiresWallet",
       "maxConcurrentTasks",
+      "assignedIssueScope",
       "emptyWalletText",
       "rolesWithReviewAuthority"
     ]
