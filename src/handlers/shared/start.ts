@@ -22,7 +22,11 @@ export async function start(
 
   if (requiredLabelsToStart.length && !requiredLabelsToStart.some((label) => issueLabels.includes(label))) {
     // The "Priority" label must reflect a business priority, not a development one.
-    throw new Error("This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks.");
+    throw logger.error("This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks.", {
+      requiredLabelsToStart,
+      issueLabels,
+      issue: issue.html_url,
+    });
   }
 
   if (!sender) {

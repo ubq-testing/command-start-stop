@@ -288,9 +288,9 @@ describe("User start/stop", () => {
 
     context.adapters = createAdapters(getSupabase(), context);
 
-    await expect(userStartStop(context)).rejects.toThrow(
-      "This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks."
-    );
+    await expect(userStartStop(context)).rejects.toMatchObject({
+      logMessage: { raw: "This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks." },
+    });
   });
 });
 
