@@ -34,13 +34,11 @@ export async function userSelfAssign(context: Context<"issues.assigned">): Promi
   const deadline = getDeadline(issue.labels);
 
   // We avoid posting a message if the bot is the actor to avoid double posting
-  if (payload.sender.type === "Bot") {
-    context.logger.debug("Skipping deadline posting message because the sender is a bot.");
-    return { status: HttpStatusCode.NOT_MODIFIED };
-  }
-
-  if (!deadline) {
-    context.logger.debug("Skipping deadline posting message because no deadline has been set.");
+  if (!deadline || payload.sender.type === "Bot") {
+    context.logger.debug("Skipping deadline posting message.", {
+      senderType: payload.sender.type,
+      deadline: deadline,
+    });
     return { status: HttpStatusCode.NOT_MODIFIED };
   }
 
