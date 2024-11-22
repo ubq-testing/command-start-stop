@@ -1,14 +1,13 @@
+import { createClient } from "@supabase/supabase-js";
+import { createAdapters } from "./adapters";
+import { HttpStatusCode } from "./handlers/result-types";
 import { commandHandler, userPullRequest, userSelfAssign, userStartStop, userUnassigned } from "./handlers/user-start-stop";
 import { Context } from "./types";
 import { listOrganizations } from "./utils/list-organizations";
-import { HttpStatusCode } from "./handlers/result-types";
-import { createAdapters } from "./adapters";
-import { createClient } from "@supabase/supabase-js";
 
 export async function startStopTask(context: Context) {
   context.adapters = createAdapters(createClient(context.env.SUPABASE_URL, context.env.SUPABASE_KEY), context as Context);
-  const organizations = await listOrganizations(context);
-  context.organizations = organizations;
+  context.organizations = await listOrganizations(context);
 
   if (context.command) {
     return await commandHandler(context);
