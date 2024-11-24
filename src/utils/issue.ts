@@ -1,11 +1,11 @@
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { Endpoints } from "@octokit/types";
 import ms from "ms";
+import { AssignedIssueScope, Role } from "../types";
 import { Context } from "../types/context";
 import { GitHubIssueSearch, RepoIssues, Review } from "../types/payload";
 import { getLinkedPullRequests, GetLinkedResults } from "./get-linked-prs";
 import { getAllPullRequestsFallback, getAssignedIssuesFallback } from "./get-pull-requests-fallback";
-import { AssignedIssueScope, Role } from "../types";
 
 export function isParentIssue(body: string) {
   const parentPattern = /-\s+\[( |x)\]\s+#\d+/;

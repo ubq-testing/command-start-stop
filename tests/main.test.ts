@@ -1,17 +1,17 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect } from "@jest/globals";
 import { drop } from "@mswjs/data";
+import { TransformDecodeError, Value } from "@sinclair/typebox/value";
 import { createClient } from "@supabase/supabase-js";
 import { cleanLogString, Logs } from "@ubiquity-os/ubiquity-os-logger";
 import dotenv from "dotenv";
 import { createAdapters } from "../src/adapters";
+import { HttpStatusCode } from "../src/handlers/result-types";
 import { userStartStop, userUnassigned } from "../src/handlers/user-start-stop";
 import { AssignedIssueScope, Context, envSchema, Role, Sender, SupportedEvents } from "../src/types";
 import { db } from "./__mocks__/db";
 import issueTemplate from "./__mocks__/issue-template";
 import { server } from "./__mocks__/node";
 import usersGet from "./__mocks__/users-get.json";
-import { HttpStatusCode } from "../src/handlers/result-types";
-import { TransformDecodeError, Value } from "@sinclair/typebox/value";
 
 dotenv.config();
 
@@ -698,7 +698,7 @@ export function createContext(
       BOT_USER_ID: appId as unknown as number,
     },
     command: null,
-  };
+  } as unknown as Context;
 }
 
 export function getSupabase(withData = true) {
