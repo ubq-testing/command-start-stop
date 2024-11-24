@@ -261,11 +261,9 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
     const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.html_url);
     const reviews = await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo);
 
-    if (reviews.length > 0) {
-      const approvedReviews = reviews.find((review) => review.state === "APPROVED");
-      if (approvedReviews) {
-        result.push(openedPullRequest);
-      }
+    if (!reviews.length || (reviews.length > 0 && reviews.some((review) => review.state === "CHANGES_REQUESTED"))) {
+      result.push(openedPullRequest);
+      continue;
     }
 
     if (reviews.length === 0 && new Date().getTime() - new Date(openedPullRequest.created_at).getTime() >= getTimeValue(reviewDelayTolerance)) {

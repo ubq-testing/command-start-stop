@@ -2574,13 +2574,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sinclair/typebox@npm:^0.33.21":
-  version: 0.33.22
-  resolution: "@sinclair/typebox@npm:0.33.22"
-  checksum: 10c0/8c50b8295e0af8477e6cb5102c18a9d37d890ce08600b72d21273f5ed85183e1d9e83bb4b49aab7ff5e85e9c4b40605c1110ff6f99a08e562d6b10b38ea214a5
-  languageName: node
-  linkType: hard
-
 "@sinonjs/commons@npm:^3.0.0":
   version: 3.0.1
   resolution: "@sinonjs/commons@npm:3.0.1"
@@ -3078,7 +3071,7 @@ __metadata:
     "@types/jest": "npm:29.5.12"
     "@types/ms": "npm:^0.7.34"
     "@types/node": "npm:20.14.5"
-    "@ubiquity-os/plugin-sdk": "npm:^1.0.11"
+    "@ubiquity-os/plugin-sdk": "npm:^1.1.0"
     "@ubiquity-os/ubiquity-os-logger": "npm:^1.3.2"
     cspell: "npm:8.9.0"
     dotenv: "npm:^16.4.4"
@@ -3105,9 +3098,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ubiquity-os/plugin-sdk@npm:^1.0.11":
-  version: 1.0.11
-  resolution: "@ubiquity-os/plugin-sdk@npm:1.0.11"
+"@ubiquity-os/plugin-sdk@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@ubiquity-os/plugin-sdk@npm:1.1.0"
   dependencies:
     "@actions/core": "npm:^1.11.1"
     "@actions/github": "npm:^6.0.0"
@@ -3120,11 +3113,12 @@ __metadata:
     "@octokit/rest": "npm:^21.0.2"
     "@octokit/types": "npm:^13.6.1"
     "@octokit/webhooks": "npm:^13.3.0"
-    "@sinclair/typebox": "npm:^0.33.21"
     "@ubiquity-os/ubiquity-os-logger": "npm:^1.3.2"
     dotenv: "npm:^16.4.5"
     hono: "npm:^4.6.9"
-  checksum: 10c0/5ca06ead4ce0cd6e9bb2c4e353860904d1a5a8621b8ec03c9362ac6dc1e2a79b1d5d730e529cc03fb4d976eebf1f80e694e13997b90a188301da6daf56e1ac53
+  peerDependencies:
+    "@sinclair/typebox": 0.34.3
+  checksum: 10c0/ee7ea78eb2ae4644ee7dc9b94651793f5a591ad0203532269276a705e4c85fe68fbccffb3f97d9aaa6c969dd67defd474729421fc3a4dd9ff678c601d6bb2638
   languageName: node
   linkType: hard
 
