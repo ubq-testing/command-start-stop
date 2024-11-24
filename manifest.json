@@ -1,13 +1,7 @@
 {
   "name": "Start | Stop",
   "description": "Assign or un-assign yourself from an issue/task.",
-  "ubiquity:listeners": [
-    "issue_comment.created",
-    "issues.assigned",
-    "issues.unassigned",
-    "pull_request.opened",
-    "pull_request.edited"
-  ],
+  "ubiquity:listeners": ["issue_comment.created", "issues.assigned", "issues.unassigned", "pull_request.opened", "pull_request.edited"],
   "commands": {
     "start": {
       "ubiquity:example": "/start",
@@ -41,6 +35,7 @@
     "properties": {
       "reviewDelayTolerance": {
         "default": "1 Day",
+        "description": "How long shall the wait be for a reviewer to take action?",
         "type": "string"
       },
       "taskStaleTimeoutDuration": {
@@ -85,12 +80,7 @@
         "type": "string"
       },
       "rolesWithReviewAuthority": {
-        "default": [
-          "OWNER",
-          "ADMIN",
-          "MEMBER",
-          "COLLABORATOR"
-        ],
+        "default": ["OWNER", "ADMIN", "MEMBER", "COLLABORATOR"],
         "uniqueItems": true,
         "type": "array",
         "items": {
@@ -121,16 +111,6 @@
           "type": "string"
         }
       }
-    },
-    "required": [
-      "reviewDelayTolerance",
-      "taskStaleTimeoutDuration",
-      "startRequiresWallet",
-      "maxConcurrentTasks",
-      "assignedIssueScope",
-      "emptyWalletText",
-      "rolesWithReviewAuthority",
-      "requiredLabelsToStart"
-    ]
+    }
   }
 }
