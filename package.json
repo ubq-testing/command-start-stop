@@ -2,7 +2,7 @@
   "name": "@ubiquity-os/command-start-stop",
   "version": "1.0.0",
   "description": "Enables the assignment and graceful unassignment of tasks to contributors.",
-  "main": "src/worker.ts",
+  "main": "src/index.ts",
   "author": "Ubiquity DAO",
   "license": "MIT",
   "engines": {
