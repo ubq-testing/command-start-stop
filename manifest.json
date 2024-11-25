@@ -1,13 +1,7 @@
 {
   "name": "Start | Stop",
   "description": "Assign or un-assign yourself from an issue/task.",
-  "ubiquity:listeners": [
-    "issue_comment.created",
-    "issues.assigned",
-    "issues.unassigned",
-    "pull_request.opened",
-    "pull_request.edited"
-  ],
+  "ubiquity:listeners": ["issue_comment.created", "issues.assigned", "issues.unassigned", "pull_request.opened", "pull_request.edited"],
   "commands": {
     "start": {
       "ubiquity:example": "/start",
@@ -85,12 +79,7 @@
         "type": "string"
       },
       "rolesWithReviewAuthority": {
-        "default": [
-          "OWNER",
-          "ADMIN",
-          "MEMBER",
-          "COLLABORATOR"
-        ],
+        "default": ["OWNER", "ADMIN", "MEMBER", "COLLABORATOR"],
         "uniqueItems": true,
         "type": "array",
         "items": {
