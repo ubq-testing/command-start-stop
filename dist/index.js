@@ -43307,7 +43307,7 @@
         const { taskStaleTimeoutDuration: g, requiredLabelsToStart: h } = p;
         const m = t.labels.map((e) => e.name);
         if (h.length && !h.some((e) => m.includes(e))) {
-          throw A.error("This task does not reflect a business priority at the moment and cannot be started. This will be reassessed in the coming weeks.", {
+          throw A.error(`This task does not reflect a business priority at the moment. You may start tasks with one of the following labels: ${h.join(", ")}`, {
             requiredLabelsToStart: h,
             issueLabels: m,
             issue: t.html_url,
@@ -47662,8 +47662,10 @@
             }
             o = A;
           }
-          const i = r.sort((e, t) => e.score - t.score);
-          return [i.map(({ handler: e, params: t }) => [e, t])];
+          if (r.length > 1) {
+            r.sort((e, t) => e.score - t.score);
+          }
+          return [r.map(({ handler: e, params: t }) => [e, t])];
         }
       }
       0 && 0;
