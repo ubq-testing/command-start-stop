@@ -43642,6 +43642,7 @@
             settingsSchema: A.pluginSettingsSchema,
             logLevel: t.LOG_LEVEL,
             kernelPublicKey: t.KERNEL_PUBLIC_KEY,
+            bypassSignatureVerification: process.env.NODE_ENV === "local",
           }).fetch(e, t, r);
         },
       };
@@ -44086,11 +44087,13 @@
         if (!r) return [];
         const s = await getOpenedPullRequestsForUser(e, t);
         const o = [];
+        console.log("+++", s);
         for (let t = 0; s && t < s.length; t++) {
           const n = s[t];
           if (!n) continue;
           const { owner: i, repo: a } = getOwnerRepoFromHtmlUrl(n.html_url);
           const A = await getAllPullRequestReviews(e, n.number, i, a);
+          console.dir(A, { depth: null });
           if (!A.length || (A.length > 0 && A.some((e) => e.state === "CHANGES_REQUESTED"))) {
             o.push(n);
             continue;
@@ -50938,7 +50941,7 @@
     94799: (e) => {
       "use strict";
       e.exports = JSON.parse(
-        '{"name":"Start | Stop","description":"Assign or un-assign yourself from an issue/task.","ubiquity:listeners":["issue_comment.created","issues.assigned","issues.unassigned","pull_request.opened","pull_request.edited"],"commands":{"start":{"ubiquity:example":"/start","description":"Assign yourself and/or others to the issue/task.","parameters":{"type":"object","properties":{"teammates":{"description":"Users other than yourself to assign to the issue","type":"array","items":{"description":"Github username","type":"string"}}}}},"stop":{"ubiquity:example":"/stop","description":"Unassign yourself from the issue/task.","parameters":{"type":"object","properties":{}}}},"configuration":{"default":{},"type":"object","properties":{"reviewDelayTolerance":{"default":"1 Day","type":"string"},"taskStaleTimeoutDuration":{"default":"30 Days","type":"string"},"startRequiresWallet":{"default":true,"type":"boolean"},"maxConcurrentTasks":{"default":{"member":10,"contributor":2},"type":"object","patternProperties":{"^(.*)$":{"type":"integer"}}},"assignedIssueScope":{"default":"org","anyOf":[{"const":"org","type":"string"},{"const":"repo","type":"string"},{"const":"network","type":"string"}]},"emptyWalletText":{"default":"Please set your wallet address with the /wallet command first and try again.","type":"string"},"rolesWithReviewAuthority":{"default":["OWNER","ADMIN","MEMBER","COLLABORATOR"],"uniqueItems":true,"type":"array","items":{"anyOf":[{"const":"OWNER","type":"string"},{"const":"ADMIN","type":"string"},{"const":"MEMBER","type":"string"},{"const":"COLLABORATOR","type":"string"}]}},"requiredLabelsToStart":{"default":[],"type":"array","items":{"type":"string"}}},"required":["reviewDelayTolerance","taskStaleTimeoutDuration","startRequiresWallet","maxConcurrentTasks","assignedIssueScope","emptyWalletText","rolesWithReviewAuthority","requiredLabelsToStart"]}}'
+        '{"name":"Start | Stop","description":"Assign or un-assign yourself from an issue/task.","ubiquity:listeners":["issue_comment.created","issues.assigned","issues.unassigned","pull_request.opened","pull_request.edited"],"commands":{"start":{"ubiquity:example":"/start","description":"Assign yourself and/or others to the issue/task.","parameters":{"type":"object","properties":{"teammates":{"description":"Users other than yourself to assign to the issue","type":"array","items":{"description":"Github username","type":"string"}}}}},"stop":{"ubiquity:example":"/stop","description":"Unassign yourself from the issue/task.","parameters":{"type":"object","properties":{}}}},"configuration":{"default":{},"type":"object","properties":{"reviewDelayTolerance":{"default":"1 Day","description":"How long shall the wait be for a reviewer to take action?","type":"string"},"taskStaleTimeoutDuration":{"default":"30 Days","type":"string"},"startRequiresWallet":{"default":true,"type":"boolean"},"maxConcurrentTasks":{"default":{"member":10,"contributor":2},"type":"object","patternProperties":{"^(.*)$":{"type":"integer"}}},"assignedIssueScope":{"default":"org","anyOf":[{"const":"org","type":"string"},{"const":"repo","type":"string"},{"const":"network","type":"string"}]},"emptyWalletText":{"default":"Please set your wallet address with the /wallet command first and try again.","type":"string"},"rolesWithReviewAuthority":{"default":["OWNER","ADMIN","MEMBER","COLLABORATOR"],"uniqueItems":true,"type":"array","items":{"anyOf":[{"const":"OWNER","type":"string"},{"const":"ADMIN","type":"string"},{"const":"MEMBER","type":"string"},{"const":"COLLABORATOR","type":"string"}]}},"requiredLabelsToStart":{"default":[],"type":"array","items":{"type":"string"}}}}}'
       );
     },
     80056: (e) => {
