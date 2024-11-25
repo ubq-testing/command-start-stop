@@ -248,6 +248,48 @@ export function getOwnerRepoFromHtmlUrl(url: string) {
   };
 }
 
+async function getReviewByUser(context: Context, pullRequest: Awaited<ReturnType<typeof getOpenedPullRequestsForUser>>[0]) {
+  const { owner, repo } = getOwnerRepoFromHtmlUrl(pullRequest.html_url);
+  const reviews = (await getAllPullRequestReviews(context, pullRequest.number, owner, repo)).sort((a, b) => {
+    if (!a?.submitted_at || !b?.submitted_at) {
+      return 0;
+    }
+    return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
+  });
+  const latestReviewsByUser: Map<number, Review> = new Map();
+  for (const review of reviews) {
+    const isReviewRequestedForUser =
+      "requested_reviewers" in pullRequest && pullRequest.requested_reviewers && pullRequest.requested_reviewers.some((o) => o.id === review.user?.id);
+    if (!isReviewRequestedForUser && review.user?.id && !latestReviewsByUser.has(review.user?.id)) {
+      latestReviewsByUser.set(review.user?.id, review);
+    }
+  }
+
+  return latestReviewsByUser;
+}
+
+async function shouldSkipPullRequest(
+  context: Context,
+  pullRequests: Awaited<ReturnType<typeof getReviewByUser>>,
+  { owner, repo, issueNumber }: { owner: string; repo: string; issueNumber: number },
+  reviewDelayTolerance: string
+) {
+  if (pullRequests.values().some((o) => o.state === "CHANGES_REQUESTED")) {
+    return false;
+  } else if (!pullRequests.values().some((o) => o.state === "APPROVED")) {
+    const timeline = await context.octokit.paginate(context.octokit.rest.issues.listEventsForTimeline, {
+      owner,
+      repo,
+      issue_number: issueNumber,
+    });
+    const reviewEvent = timeline.filter((o) => o.event === "review_requested").pop();
+    if (reviewEvent && "created_at" in reviewEvent && new Date().getTime() - new Date(reviewEvent.created_at).getTime() < getTimeValue(reviewDelayTolerance)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Returns all the pull-requests pending to be approved, counting as a malus against the PR user's quota.
  */
@@ -262,39 +304,15 @@ export async function getPendingOpenedPullRequests(context: Context, username: s
     const openedPullRequest = openedPullRequests[i];
     if (!openedPullRequest) continue;
     const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.html_url);
-    const reviews = (await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo)).sort((a, b) => {
-      if (!a?.submitted_at || !b?.submitted_at) {
-        return 0;
-      }
-      return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
-    });
-    const latestReviewsByUser: Map<number, Review> = new Map();
-    for (const review of reviews) {
-      const isReviewRequestedForUser =
-        "requested_reviewers" in openedPullRequest &&
-        openedPullRequest.requested_reviewers &&
-        openedPullRequest.requested_reviewers.some((o) => o.id === review.user?.id);
-      if (!isReviewRequestedForUser && review.user?.id && !latestReviewsByUser.has(review.user?.id)) {
-        latestReviewsByUser.set(review.user?.id, review);
-      }
-    }
-
-    if (latestReviewsByUser.values().some((o) => o.state === "CHANGES_REQUESTED")) {
+    const latestReviewsByUser = await getReviewByUser(context, openedPullRequest);
+    const shouldSkipPr = await shouldSkipPullRequest(
+      context,
+      latestReviewsByUser,
+      { owner, repo, issueNumber: openedPullRequest.number },
+      reviewDelayTolerance
+    );
+    if (!shouldSkipPr) {
       result.push(openedPullRequest);
-    } else if (!latestReviewsByUser.values().some((o) => o.state === "APPROVED")) {
-      const timeline = await context.octokit.paginate(context.octokit.rest.issues.listEventsForTimeline, {
-        owner,
-        repo,
-        issue_number: openedPullRequest.number,
-      });
-      const reviewEvent = timeline.filter((o) => o.event === "review_requested").pop();
-      if (
-        reviewEvent &&
-        "created_at" in reviewEvent &&
-        new Date().getTime() - new Date(reviewEvent.created_at).getTime() < getTimeValue(reviewDelayTolerance)
-      ) {
-        result.push(openedPullRequest);
-      }
     }
   }
   return result;
