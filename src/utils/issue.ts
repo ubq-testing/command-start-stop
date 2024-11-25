@@ -252,14 +252,18 @@ export async function getAvailableOpenedPullRequests(context: Context, username:
   const { reviewDelayTolerance } = context.config;
   if (!reviewDelayTolerance) return [];
 
+  // TODO: filter out approved
+  // check last reviewer time if not approved
   const openedPullRequests = await getOpenedPullRequestsForUser(context, username);
   const result: (typeof openedPullRequests)[number][] = [];
 
+  console.log("+++", openedPullRequests);
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
     if (!openedPullRequest) continue;
     const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.html_url);
     const reviews = await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo);
+    console.dir(reviews, { depth: null });
 
     if (!reviews.length || (reviews.length > 0 && reviews.some((review) => review.state === "CHANGES_REQUESTED"))) {
       result.push(openedPullRequest);
