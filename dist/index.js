@@ -44082,6 +44082,35 @@
         }
         return { owner: t[3], repo: t[4] };
       }
+      async function getReviewByUser(e, t) {
+        const { owner: r, repo: s } = getOwnerRepoFromHtmlUrl(t.html_url);
+        const o = (await getAllPullRequestReviews(e, t.number, r, s)).sort((e, t) => {
+          if (!e?.submitted_at || !t?.submitted_at) {
+            return 0;
+          }
+          return new Date(t.submitted_at).getTime() - new Date(e.submitted_at).getTime();
+        });
+        const n = new Map();
+        for (const e of o) {
+          const r = "requested_reviewers" in t && t.requested_reviewers && t.requested_reviewers.some((t) => t.id === e.user?.id);
+          if (!r && e.user?.id && !n.has(e.user?.id)) {
+            n.set(e.user?.id, e);
+          }
+        }
+        return n;
+      }
+      async function shouldSkipPullRequest(e, t, { owner: r, repo: s, issueNumber: o }, n) {
+        if (t.values().some((e) => e.state === "CHANGES_REQUESTED")) {
+          return false;
+        } else if (!t.values().some((e) => e.state === "APPROVED")) {
+          const t = await e.octokit.paginate(e.octokit.rest.issues.listEventsForTimeline, { owner: r, repo: s, issue_number: o });
+          const i = t.filter((e) => e.event === "review_requested").pop();
+          if (i && "created_at" in i && new Date().getTime() - new Date(i.created_at).getTime() < getTimeValue(n)) {
+            return false;
+          }
+        }
+        return true;
+      }
       async function getPendingOpenedPullRequests(e, t) {
         const { reviewDelayTolerance: r } = e.config;
         if (!r) return [];
@@ -44091,27 +44120,10 @@
           const n = s[t];
           if (!n) continue;
           const { owner: i, repo: a } = getOwnerRepoFromHtmlUrl(n.html_url);
-          const A = (await getAllPullRequestReviews(e, n.number, i, a)).sort((e, t) => {
-            if (!e?.submitted_at || !t?.submitted_at) {
-              return 0;
-            }
-            return new Date(t.submitted_at).getTime() - new Date(e.submitted_at).getTime();
-          });
-          const c = new Map();
-          for (const e of A) {
-            const t = "requested_reviewers" in n && n.requested_reviewers && n.requested_reviewers.some((t) => t.id === e.user?.id);
-            if (!t && e.user?.id && !c.has(e.user?.id)) {
-              c.set(e.user?.id, e);
-            }
-          }
-          if (c.values().some((e) => e.state === "CHANGES_REQUESTED")) {
+          const A = await getReviewByUser(e, n);
+          const c = await shouldSkipPullRequest(e, A, { owner: i, repo: a, issueNumber: n.number }, r);
+          if (!c) {
             o.push(n);
-          } else if (!c.values().some((e) => e.state === "APPROVED")) {
-            const t = await e.octokit.paginate(e.octokit.rest.issues.listEventsForTimeline, { owner: i, repo: a, issue_number: n.number });
-            const s = t.filter((e) => e.event === "review_requested").pop();
-            if (s && "created_at" in s && new Date().getTime() - new Date(s.created_at).getTime() < getTimeValue(r)) {
-              o.push(n);
-            }
           }
         }
         return o;
