@@ -3997,7 +3997,7 @@ headers-polyfill@^4.0.2:
   resolved "https://registry.yarnpkg.com/headers-polyfill/-/headers-polyfill-4.0.3.tgz#922a0155de30ecc1f785bcf04be77844ca95ad07"
   integrity sha512-IScLbePpkvO846sIwOtOTDjutRMWdXdJmXdMvk6gCBHxFO8d+QKOQedyZSxFTTFYRSmlgSTDtXqqq4pcenBXLQ==
 
-hono@^4.6.9:
+hono@^4.6.12, hono@^4.6.9:
   version "4.6.12"
   resolved "https://registry.yarnpkg.com/hono/-/hono-4.6.12.tgz#edc052e1154f22b74d4d3de9fdcdea0e0187ac3e"
   integrity sha512-eHtf4kSDNw6VVrdbd5IQi16r22m3s7mWPLd7xOMhg1a/Yyb1A0qpUFq8xYMX4FMuDe1nTKeMX5rTx7Nmw+a+Ag==
