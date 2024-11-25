@@ -248,30 +248,53 @@ export function getOwnerRepoFromHtmlUrl(url: string) {
   };
 }
 
-export async function getAvailableOpenedPullRequests(context: Context, username: string) {
+/**
+ * Returns all the pull-requests pending to be approved, counting as a malus against the PR user's quota.
+ */
+export async function getPendingOpenedPullRequests(context: Context, username: string) {
   const { reviewDelayTolerance } = context.config;
   if (!reviewDelayTolerance) return [];
 
-  // TODO: filter out approved
-  // check last reviewer time if not approved
   const openedPullRequests = await getOpenedPullRequestsForUser(context, username);
   const result: (typeof openedPullRequests)[number][] = [];
 
-  console.log("+++", openedPullRequests);
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
     if (!openedPullRequest) continue;
     const { owner, repo } = getOwnerRepoFromHtmlUrl(openedPullRequest.html_url);
-    const reviews = await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo);
-    console.dir(reviews, { depth: null });
-
-    if (!reviews.length || (reviews.length > 0 && reviews.some((review) => review.state === "CHANGES_REQUESTED"))) {
-      result.push(openedPullRequest);
-      continue;
+    const reviews = (await getAllPullRequestReviews(context, openedPullRequest.number, owner, repo)).sort((a, b) => {
+      if (!a?.submitted_at || !b?.submitted_at) {
+        return 0;
+      }
+      return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
+    });
+    const latestReviewsByUser: Map<number, Review> = new Map();
+    for (const review of reviews) {
+      const isReviewRequestedForUser =
+        "requested_reviewers" in openedPullRequest &&
+        openedPullRequest.requested_reviewers &&
+        openedPullRequest.requested_reviewers.some((o) => o.id === review.user?.id);
+      if (!isReviewRequestedForUser && review.user?.id && !latestReviewsByUser.has(review.user?.id)) {
+        latestReviewsByUser.set(review.user?.id, review);
+      }
     }
 
-    if (reviews.length === 0 && new Date().getTime() - new Date(openedPullRequest.created_at).getTime() >= getTimeValue(reviewDelayTolerance)) {
+    if (latestReviewsByUser.values().some((o) => o.state === "CHANGES_REQUESTED")) {
       result.push(openedPullRequest);
+    } else if (!latestReviewsByUser.values().some((o) => o.state === "APPROVED")) {
+      const timeline = await context.octokit.paginate(context.octokit.rest.issues.listEventsForTimeline, {
+        owner,
+        repo,
+        issue_number: openedPullRequest.number,
+      });
+      const reviewEvent = timeline.filter((o) => o.event === "review_requested").pop();
+      if (
+        reviewEvent &&
+        "created_at" in reviewEvent &&
+        new Date().getTime() - new Date(reviewEvent.created_at).getTime() < getTimeValue(reviewDelayTolerance)
+      ) {
+        result.push(openedPullRequest);
+      }
     }
   }
   return result;
