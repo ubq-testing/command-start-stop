@@ -43424,7 +43424,7 @@
         return r;
       }
       async function handleTaskLimitChecks(e, t, r, s) {
-        const o = await (0, i.getAvailableOpenedPullRequests)(t, e);
+        const o = await (0, i.getPendingOpenedPullRequests)(t, e);
         const n = await (0, i.getAssignedIssues)(t, e);
         const { limit: a } = await (0, p.getUserRoleAndTaskLimit)(t, e);
         if (Math.abs(n.length - o.length) >= a) {
@@ -43919,7 +43919,7 @@
       t.getAllPullRequestsWithRetry = getAllPullRequestsWithRetry;
       t.getAllPullRequestReviews = getAllPullRequestReviews;
       t.getOwnerRepoFromHtmlUrl = getOwnerRepoFromHtmlUrl;
-      t.getAvailableOpenedPullRequests = getAvailableOpenedPullRequests;
+      t.getPendingOpenedPullRequests = getPendingOpenedPullRequests;
       t.getTimeValue = getTimeValue;
       t.issueLinkedViaPrBody = issueLinkedViaPrBody;
       const o = s(r(70744));
@@ -44082,24 +44082,36 @@
         }
         return { owner: t[3], repo: t[4] };
       }
-      async function getAvailableOpenedPullRequests(e, t) {
+      async function getPendingOpenedPullRequests(e, t) {
         const { reviewDelayTolerance: r } = e.config;
         if (!r) return [];
         const s = await getOpenedPullRequestsForUser(e, t);
         const o = [];
-        console.log("+++", s);
         for (let t = 0; s && t < s.length; t++) {
           const n = s[t];
           if (!n) continue;
           const { owner: i, repo: a } = getOwnerRepoFromHtmlUrl(n.html_url);
-          const A = await getAllPullRequestReviews(e, n.number, i, a);
-          console.dir(A, { depth: null });
-          if (!A.length || (A.length > 0 && A.some((e) => e.state === "CHANGES_REQUESTED"))) {
-            o.push(n);
-            continue;
+          const A = (await getAllPullRequestReviews(e, n.number, i, a)).sort((e, t) => {
+            if (!e?.submitted_at || !t?.submitted_at) {
+              return 0;
+            }
+            return new Date(t.submitted_at).getTime() - new Date(e.submitted_at).getTime();
+          });
+          const c = new Map();
+          for (const e of A) {
+            const t = "requested_reviewers" in n && n.requested_reviewers && n.requested_reviewers.some((t) => t.id === e.user?.id);
+            if (!t && e.user?.id && !c.has(e.user?.id)) {
+              c.set(e.user?.id, e);
+            }
           }
-          if (A.length === 0 && new Date().getTime() - new Date(n.created_at).getTime() >= getTimeValue(r)) {
+          if (c.values().some((e) => e.state === "CHANGES_REQUESTED")) {
             o.push(n);
+          } else if (!c.values().some((e) => e.state === "APPROVED")) {
+            const t = await e.octokit.paginate(e.octokit.rest.issues.listEventsForTimeline, { owner: i, repo: a, issue_number: n.number });
+            const s = t.filter((e) => e.event === "review_requested").pop();
+            if (s && "created_at" in s && new Date().getTime() - new Date(s.created_at).getTime() < getTimeValue(r)) {
+              o.push(n);
+            }
           }
         }
         return o;
