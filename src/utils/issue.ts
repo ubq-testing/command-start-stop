@@ -281,21 +281,23 @@ async function shouldSkipPullRequest(
     issue_number: issueNumber,
   });
   const reviewEvent = timeline.filter((o) => o.event === "review_requested").pop();
-  if (!reviews.size) {
-    const toCompare = reviewEvent && "created_at" in reviewEvent ? reviewEvent : pullRequest;
-    return new Date().getTime() - new Date(toCompare.created_at).getTime() >= getTimeValue(reviewDelayTolerance);
+  const referenceTime = reviewEvent && "created_at" in reviewEvent ? new Date(reviewEvent.created_at).getTime() : new Date(pullRequest.created_at).getTime();
+
+  // If no reviews exist, check time reference
+  if (reviews.size === 0) {
+    return new Date().getTime() - referenceTime >= getTimeValue(reviewDelayTolerance);
   }
-  if (reviews.values().some((o) => o.state === "CHANGES_REQUESTED")) {
-    return false;
-  } else if (
-    !reviews.values().some((o) => o.state === "APPROVED") &&
-    reviewEvent &&
-    "created_at" in reviewEvent &&
-    new Date().getTime() - new Date(reviewEvent.created_at).getTime() >= getTimeValue(reviewDelayTolerance)
-  ) {
-    return false;
+
+  // If changes are requested, do not skip
+  if (Array.from(reviews.values()).some((review) => review.state === "CHANGES_REQUESTED")) {
+    return true;
   }
-  return true;
+
+  // If no approvals exist or time reference has exceeded review delay tolerance
+  const hasApproval = Array.from(reviews.values()).some((review) => review.state === "APPROVED");
+  const isTimePassed = new Date().getTime() - referenceTime >= getTimeValue(reviewDelayTolerance);
+
+  return hasApproval || !isTimePassed;
 }
 
 /**
@@ -308,7 +310,6 @@ export async function getPendingOpenedPullRequests(context: Context, username: s
   const openedPullRequests = await getOpenedPullRequestsForUser(context, username);
   const result: (typeof openedPullRequests)[number][] = [];
 
-  console.log("opened prs", openedPullRequests.length);
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
     if (!openedPullRequest) continue;
