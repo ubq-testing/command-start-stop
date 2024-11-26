@@ -274,6 +274,9 @@ async function shouldSkipPullRequest(
   { owner, repo, issueNumber }: { owner: string; repo: string; issueNumber: number },
   reviewDelayTolerance: string
 ) {
+  if (!pullRequests.size) {
+    return false;
+  }
   if (pullRequests.values().some((o) => o.state === "CHANGES_REQUESTED")) {
     return false;
   } else if (!pullRequests.values().some((o) => o.state === "APPROVED")) {
