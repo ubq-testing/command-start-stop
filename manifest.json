@@ -97,8 +97,8 @@
           "MEMBER",
           "COLLABORATOR"
         ],
-        "description": "When considering a user for a task: which roles should be considered as having review authority? All others are ignored.",
         "uniqueItems": true,
+        "description": "When considering a user for a task: which roles should be considered as having review authority? All others are ignored.",
         "type": "array",
         "items": {
           "anyOf": [
