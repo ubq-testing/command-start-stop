@@ -680,7 +680,7 @@ export function createContext(
         ...sender,
       },
     } as Context["payload"],
-    logger: new Logs("debug"),
+    logger: new Logs("debug") as unknown as Context["logger"],
     config: {
       reviewDelayTolerance: "3 Days",
       taskStaleTimeoutDuration: "30 Days",
