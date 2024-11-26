@@ -270,25 +270,30 @@ async function getReviewByUser(context: Context, pullRequest: Awaited<ReturnType
 
 async function shouldSkipPullRequest(
   context: Context,
-  pullRequests: Awaited<ReturnType<typeof getReviewByUser>>,
+  pullRequest: Awaited<ReturnType<typeof getOpenedPullRequestsForUser>>[0],
+  reviews: Awaited<ReturnType<typeof getReviewByUser>>,
   { owner, repo, issueNumber }: { owner: string; repo: string; issueNumber: number },
   reviewDelayTolerance: string
 ) {
-  if (!pullRequests.size) {
-    return false;
+  const timeline = await context.octokit.paginate(context.octokit.rest.issues.listEventsForTimeline, {
+    owner,
+    repo,
+    issue_number: issueNumber,
+  });
+  const reviewEvent = timeline.filter((o) => o.event === "review_requested").pop();
+  if (!reviews.size) {
+    const toCompare = reviewEvent && "created_at" in reviewEvent ? reviewEvent : pullRequest;
+    return new Date().getTime() - new Date(toCompare.created_at).getTime() >= getTimeValue(reviewDelayTolerance);
   }
-  if (pullRequests.values().some((o) => o.state === "CHANGES_REQUESTED")) {
+  if (reviews.values().some((o) => o.state === "CHANGES_REQUESTED")) {
     return false;
-  } else if (!pullRequests.values().some((o) => o.state === "APPROVED")) {
-    const timeline = await context.octokit.paginate(context.octokit.rest.issues.listEventsForTimeline, {
-      owner,
-      repo,
-      issue_number: issueNumber,
-    });
-    const reviewEvent = timeline.filter((o) => o.event === "review_requested").pop();
-    if (reviewEvent && "created_at" in reviewEvent && new Date().getTime() - new Date(reviewEvent.created_at).getTime() < getTimeValue(reviewDelayTolerance)) {
-      return false;
-    }
+  } else if (
+    !reviews.values().some((o) => o.state === "APPROVED") &&
+    reviewEvent &&
+    "created_at" in reviewEvent &&
+    new Date().getTime() - new Date(reviewEvent.created_at).getTime() >= getTimeValue(reviewDelayTolerance)
+  ) {
+    return false;
   }
   return true;
 }
@@ -303,6 +308,7 @@ export async function getPendingOpenedPullRequests(context: Context, username: s
   const openedPullRequests = await getOpenedPullRequestsForUser(context, username);
   const result: (typeof openedPullRequests)[number][] = [];
 
+  console.log("opened prs", openedPullRequests.length);
   for (let i = 0; openedPullRequests && i < openedPullRequests.length; i++) {
     const openedPullRequest = openedPullRequests[i];
     if (!openedPullRequest) continue;
@@ -310,6 +316,7 @@ export async function getPendingOpenedPullRequests(context: Context, username: s
     const latestReviewsByUser = await getReviewByUser(context, openedPullRequest);
     const shouldSkipPr = await shouldSkipPullRequest(
       context,
+      openedPullRequest,
       latestReviewsByUser,
       { owner, repo, issueNumber: openedPullRequest.number },
       reviewDelayTolerance
