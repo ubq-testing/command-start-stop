@@ -1,15 +1,4 @@
 import { StaticDecode, Type as T } from "@sinclair/typebox";
-import { StandardValidator } from "typebox-validators";
-import { SupportedEvents, SupportedEventsU } from "./context";
-
-export interface PluginInputs<T extends SupportedEventsU = SupportedEventsU, TU extends SupportedEvents[T] = SupportedEvents[T]> {
-  stateId: string;
-  eventName: T;
-  eventPayload: TU["payload"];
-  settings: PluginSettings;
-  authToken: string;
-  ref: string;
-}
 
 export enum AssignedIssueScope {
   ORG = "org",
@@ -17,12 +6,19 @@ export enum AssignedIssueScope {
   NETWORK = "network",
 }
 
-const rolesWithReviewAuthority = T.Array(T.String(),
-  {
-    default: ["COLLABORATOR", "OWNER", "MEMBER", "ADMIN"],
+export enum Role {
+  OWNER = "OWNER",
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
+  COLLABORATOR = "COLLABORATOR",
+}
+
+const rolesWithReviewAuthority = T.Array(T.Enum(Role), 
+  { 
+    default: [Role.OWNER, Role.ADMIN, Role.MEMBER, Role.COLLABORATOR],
+    uniqueItems: true,
     description: "When considering a user for a task: which roles should be considered as having review authority? All others are ignored."
-  }
-);
+});
 
 const maxConcurrentTasks = T.Transform(T.Record(T.String(), T.Integer(), { default: { member: 10, contributor: 2 }, description: "The maximum number of tasks a user can have assigned to them at once, based on their role." }))
   .Decode((obj) => {
@@ -63,4 +59,3 @@ export const pluginSettingsSchema = T.Object(
 );
 
 export type PluginSettings = StaticDecode<typeof pluginSettingsSchema>;
-export const startStopSettingsValidator = new StandardValidator(pluginSettingsSchema);
