@@ -16,6 +16,6 @@ jobs:
         with:
           treatAsEsm: false
           sourcemap: false
-          pluginEntry: ${{ github.workspace }}/src/worker.ts
+          pluginEntry: ${{ github.workspace }}/src/index.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
