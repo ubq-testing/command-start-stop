@@ -41,11 +41,19 @@
     "properties": {
       "reviewDelayTolerance": {
         "default": "1 Day",
+        "examples": [
+          "1 Day",
+          "5 Days"
+        ],
         "description": "When considering a user for a task: if they have existing PRs with no reviews, how long should we wait before 'increasing' their assignable task limit?",
         "type": "string"
       },
       "taskStaleTimeoutDuration": {
         "default": "30 Days",
+        "examples": [
+          "1 Day",
+          "5 Days"
+        ],
         "description": "When displaying the '/start' response, how long should we wait before considering a task 'stale' and provide a warning?",
         "type": "string"
       },
@@ -60,6 +68,12 @@
           "contributor": 2
         },
         "description": "The maximum number of tasks a user can have assigned to them at once, based on their role.",
+        "examples": [
+          {
+            "member": 5,
+            "contributor": 1
+          }
+        ],
         "type": "object",
         "patternProperties": {
           "^(.*)$": {
@@ -70,6 +84,11 @@
       "assignedIssueScope": {
         "default": "org",
         "description": "When considering a user for a task: should we consider their assigned issues at the org, repo, or network level?",
+        "examples": [
+          "org",
+          "repo",
+          "network"
+        ],
         "anyOf": [
           {
             "const": "org",
@@ -99,6 +118,16 @@
         ],
         "uniqueItems": true,
         "description": "When considering a user for a task: which roles should be considered as having review authority? All others are ignored.",
+        "examples": [
+          [
+            "OWNER",
+            "ADMIN"
+          ],
+          [
+            "MEMBER",
+            "COLLABORATOR"
+          ]
+        ],
         "type": "array",
         "items": {
           "anyOf": [
@@ -124,6 +153,14 @@
       "requiredLabelsToStart": {
         "default": [],
         "description": "If set, a task must have at least one of these labels to be started.",
+        "examples": [
+          [
+            "Priority: 5 (Emergency)"
+          ],
+          [
+            "Good First Issue"
+          ]
+        ],
         "type": "array",
         "items": {
           "type": "string"
