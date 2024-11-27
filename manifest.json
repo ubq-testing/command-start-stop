@@ -35,6 +35,7 @@
     "properties": {
       "reviewDelayTolerance": {
         "default": "1 Day",
+        "description": "How long shall the wait be for a reviewer to take action?",
         "type": "string"
       },
       "taskStaleTimeoutDuration": {

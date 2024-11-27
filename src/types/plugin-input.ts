@@ -39,7 +39,7 @@ function maxConcurrentTasks() {
 
 export const pluginSettingsSchema = T.Object(
   {
-    reviewDelayTolerance: T.String({ default: "1 Day" }),
+    reviewDelayTolerance: T.String({ default: "1 Day", description: "How long shall the wait be for a reviewer to take action?" }),
     taskStaleTimeoutDuration: T.String({ default: "30 Days" }),
     startRequiresWallet: T.Boolean({ default: true }),
     maxConcurrentTasks: maxConcurrentTasks(),
