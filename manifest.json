@@ -129,16 +129,6 @@
           "type": "string"
         }
       }
-    },
-    "required": [
-      "reviewDelayTolerance",
-      "taskStaleTimeoutDuration",
-      "startRequiresWallet",
-      "maxConcurrentTasks",
-      "assignedIssueScope",
-      "emptyWalletText",
-      "rolesWithReviewAuthority",
-      "requiredLabelsToStart"
-    ]
+    }
   }
 }
