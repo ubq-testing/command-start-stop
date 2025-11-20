@@ -1,5 +1,62 @@
 # Changelog
 
+## [1.11.0](https://github.com/ubq-testing/command-start-stop/compare/v1.10.0...v1.11.0) (2025-11-20)
+
+
+### Features
+
+* add Azure Functions integration and deployment workflows ([6f62c13](https://github.com/ubq-testing/command-start-stop/commit/6f62c130db7650edebf2a7d6243a37af62b3f267))
+* add task access control configuration with price limits and refactor context creation ([5e82f61](https://github.com/ubq-testing/command-start-stop/commit/5e82f61be02dd189e008c07bb910aca530690daf))
+* add transformedRole for handling Infinity in collaborator and contributor roles ([737b578](https://github.com/ubq-testing/command-start-stop/commit/737b578975cf9a2ebcb2f4c4146dbfb121feddee))
+* aggregate price label and requirements errors ([088126b](https://github.com/ubq-testing/command-start-stop/commit/088126b234a67279a2198656438a6b3fae7e67a2))
+* correct context and skip issues outside of the org ([2549597](https://github.com/ubq-testing/command-start-stop/commit/2549597b57ec35071acb9551975b510e40aae8e3))
+* deno ([ffe0906](https://github.com/ubq-testing/command-start-stop/commit/ffe0906e16613260aaf8789ca1cfd9ea6f407715))
+* gate task start by account age and xp ([70a12da](https://github.com/ubq-testing/command-start-stop/commit/70a12da14fafb64d81470f40f4e8078bfd234feb))
+* gate task start by account age and xp ([68faa43](https://github.com/ubq-testing/command-start-stop/commit/68faa4336f6a93fde6680e8685bc60083f5f68e1))
+* implement task access control with price limits and add tests for default values ([6192aaf](https://github.com/ubq-testing/command-start-stop/commit/6192aaf0ba0e8454c0a9ae38d1ee0dc109eb9b40))
+* remove self assign handler ([0a3d85c](https://github.com/ubq-testing/command-start-stop/commit/0a3d85ce58074c4aec99a418a07be14babdef9fc))
+* support cross-org ([bd63352](https://github.com/ubq-testing/command-start-stop/commit/bd63352b346491a9fb79d016ddf992f8cc88e6b3))
+* Task Access Control ([5c7da5b](https://github.com/ubq-testing/command-start-stop/commit/5c7da5b0edef641037e045d37a5892c7059e9d6a))
+* upload source maps ([bb751d4](https://github.com/ubq-testing/command-start-stop/commit/bb751d4ba6af72458fb4409a2dd9352c0367b029))
+* used ubiquity's knip-reporter ([30456d1](https://github.com/ubq-testing/command-start-stop/commit/30456d19d0f4a654dd54cd4e3f33b51927453b2b))
+* used ubiquity's knip-reporter ([ac5603c](https://github.com/ubq-testing/command-start-stop/commit/ac5603cba276f0bac040e7d16e54d8dc1ab2aa74))
+
+
+### Bug Fixes
+
+* add dependency ([506906b](https://github.com/ubq-testing/command-start-stop/commit/506906bcdc68c5032a736871d7bbe53d726aa30a))
+* added a default for transformedRole to enable empty configs ([d616699](https://github.com/ubq-testing/command-start-stop/commit/d6166997265f2b3571cfed21593445a47bebb8f8))
+* added a default for transformedRole to enable empty configs ([8445aa3](https://github.com/ubq-testing/command-start-stop/commit/8445aa3db11fb2cee0d0b0b0e8cf6bd08b0f2f7f))
+* aggregate error and source maps ([a9383df](https://github.com/ubq-testing/command-start-stop/commit/a9383df1c26ae0af7b1a08b2ec027823b8eed1c3))
+* condition for branch target changed to be either ref or workflow ref ([d556b02](https://github.com/ubq-testing/command-start-stop/commit/d556b0273717ad132279ad310612bc1d2a01ab51))
+* condition for branch target changed to be either ref or workflow ref ([82bd846](https://github.com/ubq-testing/command-start-stop/commit/82bd84634edbb3aa7340802f95e172754bc7be45))
+* deployment checkout branch ([a2088b9](https://github.com/ubq-testing/command-start-stop/commit/a2088b99605817da2cb6a77a5c8ae254f4fe9cab))
+* disable start command for contributors ([d8c522a](https://github.com/ubq-testing/command-start-stop/commit/d8c522aff2cd57e5ef34e679f3c04c1c612e2d7a))
+* disable start with different message on negative setting ([224611a](https://github.com/ubq-testing/command-start-stop/commit/224611a0bb95f5bb31a337c86baded8d9ee78523))
+* error formatting ([597a745](https://github.com/ubq-testing/command-start-stop/commit/597a745350e240c5580c6d9cb7b6d5af80076913))
+* fix jest tests to handle AggregateError ([7ef84db](https://github.com/ubq-testing/command-start-stop/commit/7ef84db2b61c2e9fe641c4793b935b315ce8a1d8))
+* handle owner-type when fetching repositories ([811d3c4](https://github.com/ubq-testing/command-start-stop/commit/811d3c498a75cc6ea9239977620ecb4a379af37f))
+* handle owner-type when fetching repositories ([006c465](https://github.com/ubq-testing/command-start-stop/commit/006c4655ebcdaa9a0df8df7ad110557a6b5a786a))
+* improve error message for missing price label ([4c75365](https://github.com/ubq-testing/command-start-stop/commit/4c75365b42edce3c286cfd47f13aa6deea92565f))
+* improve price label parsing and enhance task access control validation ([e5330ac](https://github.com/ubq-testing/command-start-stop/commit/e5330ac5b1923b84e3a5bbd1cd5ab18c4dc027cf))
+* linked pull-requests on tasks that cannot be started get closed ([c0dd452](https://github.com/ubq-testing/command-start-stop/commit/c0dd45212298943fc8efdf0558240f11df6bcadb))
+* linking a pull-request to un un-priced task does not get close ([1253448](https://github.com/ubq-testing/command-start-stop/commit/125344841d7748977fd9616fe25b092033b0e20b))
+* message formatting ([982a3f5](https://github.com/ubq-testing/command-start-stop/commit/982a3f56413c79d5991aacdbcdab88b4efc6bed7))
+* messages telling the user it cannot be using `/start` are now displayed as `warnings` ([ea95869](https://github.com/ubq-testing/command-start-stop/commit/ea9586931d674685cf2b73c38ec1d7821d359e06))
+* normalize user role handling ([58727c5](https://github.com/ubq-testing/command-start-stop/commit/58727c5cba8437dcd77848dffb4b55914831eea8))
+* normalize user role handling ([bef7733](https://github.com/ubq-testing/command-start-stop/commit/bef77337b60ae71db0f4799de3ee63be269c7cf5))
+* pricing error do not close the linked pull-request ([9f97c8e](https://github.com/ubq-testing/command-start-stop/commit/9f97c8e15ec1f06c3dd2be6ae82d5632bf714c2c))
+* proper user assign on pull-request body edit ([2a85f91](https://github.com/ubq-testing/command-start-stop/commit/2a85f918fb576e8b30bb0fbb7bc47520956bb797))
+* release please issue permission ([b468670](https://github.com/ubq-testing/command-start-stop/commit/b468670eea5a5b77c342b9b36f42e8068c8e7b85))
+* simplified member role in configuration ([5fb457d](https://github.com/ubq-testing/command-start-stop/commit/5fb457de874a57300671c2848460406bbb0626c1))
+* tests ([e4977d0](https://github.com/ubq-testing/command-start-stop/commit/e4977d0538ffdd8f025db8743d235889de73fc8d))
+* tests ([1e47186](https://github.com/ubq-testing/command-start-stop/commit/1e471860392303cc8f01c4f99344b8be87686a87))
+* tests ([c2b42a4](https://github.com/ubq-testing/command-start-stop/commit/c2b42a4745dd1f3bc11b210be9ff968a7bcaad62))
+* the pull-request author is now the user assigned instead of the editor of the PR body ([7023f84](https://github.com/ubq-testing/command-start-stop/commit/7023f848b7d9ae214f8e823646d9924f3c8d6bc4))
+* update role transformation and logging for task limits ([e2a5da0](https://github.com/ubq-testing/command-start-stop/commit/e2a5da08c3e389489da1e1395f70d10538a2048e))
+* validate presence of price label in issue before checking requir… ([651d84c](https://github.com/ubq-testing/command-start-stop/commit/651d84c764cb8a3f766b914017ed0d179540d62f))
+* validate presence of price label in issue before checking requirements ([9b37967](https://github.com/ubq-testing/command-start-stop/commit/9b37967cd7527f8853f6baa6c763c58f48240e4b))
+
 ## [1.10.0](https://github.com/ubiquity-os-marketplace/command-start-stop/compare/v1.9.0...v1.10.0) (2025-05-07)
 
 
